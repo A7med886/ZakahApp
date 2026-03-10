@@ -1,0 +1,1838 @@
+<!DOCTYPE html>
+<html id="HR" lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="theme-color" content="#0d1f13"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="زكاة"/>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230d1f13'/%3E%3Cpath d='M32 12 C22 12 15 19.5 15 29 C15 38.5 22 46 32 46 C26 46 20 40 20 29 C20 18 26 12 32 12Z' fill='%23c9a84c'/%3E%3Cpolygon points='40,10 41.8,16 48,16 43.1,19.8 45,25.5 40,21.8 35,25.5 36.9,19.8 32,16 38.2,16' fill='%23c9a84c'/%3E%3C/svg%3E"/>
+<link rel="manifest" id="mlink"/>
+<title>زكاة المال · Zakah Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;900&family=Amiri:wght@400;700&family=Cormorant+Garamond:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0d1f13;--sur:#122519;--card:#183020;--c2:#1e3a28;
+  --gold:#c9a84c;--gl:#e8c97a;--gd:#8a6e30;--gdim:rgba(201,168,76,.15);
+  --grn:#2d7a4f;--grl:#3da068;--grd:#1e5235;
+  --tx:#f0ead8;--mu:#7a9488;--mu2:#9db5a7;
+  --bdr:rgba(201,168,76,.18);--bd2:rgba(255,255,255,.07);
+  --dng:#e05a4b;--dnb:rgba(224,90,75,.12);
+  --r:16px;--rs:10px;--rx:8px;
+  --trans:.26s cubic-bezier(.4,0,.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--tx);font-size:15px;line-height:1.5}
+[lang=en] *{font-family:'DM Sans',sans-serif}
+[lang=ar] .amiri{font-family:'Amiri',serif}
+[lang=en] .cg{font-family:'Cormorant Garamond',serif}
+input,select,button,textarea{font-family:inherit}
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+input[type=number]{-moz-appearance:textfield}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--gd);border-radius:2px}
+
+/* BG */
+#BG{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+#BG svg{position:absolute;width:100%;height:100%;opacity:.03}
+.blob{position:fixed;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0}
+.b1{width:300px;height:300px;background:var(--gold);top:-80px;left:-70px;opacity:.08;animation:bm 8s ease-in-out infinite}
+.b2{width:240px;height:240px;background:var(--grn);bottom:80px;right:-60px;opacity:.10;animation:bm 11s ease-in-out infinite reverse}
+@keyframes bm{0%,100%{transform:translate(0,0)}50%{transform:translate(20px,15px)}}
+
+/* APP */
+#app{position:relative;z-index:1;height:100vh;overflow:hidden;display:flex;flex-direction:column;max-width:480px;margin:0 auto}
+
+/* TRANSITIONS */
+.scr{display:none;flex-direction:column;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.scr.on{display:flex;animation:fadeIn var(--trans) both}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
+.shell{display:none;flex-direction:column;height:100vh;overflow:hidden}
+.shell.on{display:flex}
+.ca{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:84px}
+
+/* AUTH */
+#sa{background:linear-gradient(160deg,#0d2118,#091410);justify-content:flex-start;align-items:center;overflow-y:auto}
+.aw{width:100%;padding:36px 22px 60px;max-width:420px;margin:0 auto}
+.alo{text-align:center;margin-bottom:24px}
+.sring{width:88px;height:88px;margin:0 auto 14px;border:1px solid var(--gd);border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,rgba(201,168,76,.12),transparent);animation:glow 3s ease-in-out infinite;position:relative}
+@keyframes glow{0%,100%{box-shadow:0 0 18px rgba(201,168,76,.08)}50%{box-shadow:0 0 44px rgba(201,168,76,.28)}}
+.alo h1{font-size:1.8rem;color:var(--gl);font-weight:700;line-height:1.2}
+.alo p{font-size:.78rem;color:var(--mu);margin-top:5px}
+.atabs{display:flex;background:rgba(0,0,0,.3);border:1px solid var(--bdr);border-radius:var(--rs);overflow:hidden;margin-bottom:18px}
+.atb{flex:1;padding:11px;text-align:center;font-size:.88rem;border:none;background:transparent;color:var(--mu);cursor:pointer;transition:all .25s;font-family:inherit;font-weight:500}
+.atb.on{background:linear-gradient(135deg,var(--gd),var(--gold));color:#0d1f13;font-weight:700}
+.aerr{background:var(--dnb);border:1px solid rgba(224,90,75,.3);border-radius:var(--rx);padding:9px 13px;font-size:.82rem;color:var(--dng);margin-bottom:12px;display:none}
+.fg{margin-bottom:12px}
+.fg label{display:block;font-size:.75rem;color:var(--mu);margin-bottom:4px;font-weight:500}
+.inp{width:100%;background:rgba(0,0,0,.3);border:1px solid rgba(201,168,76,.12);border-radius:var(--rx);color:var(--tx);font-size:.92rem;padding:11px 13px;outline:none;transition:border-color .2s,box-shadow .2s;font-family:inherit}
+.inp:focus{border-color:var(--gd);box-shadow:0 0 0 3px rgba(201,168,76,.07)}
+.inp::placeholder{color:rgba(255,255,255,.2)}
+
+/* BUTTONS */
+.btn{display:block;width:100%;padding:13px;border:none;border-radius:var(--rx);font-size:.92rem;font-weight:600;cursor:pointer;font-family:inherit;transition:transform .15s,box-shadow .15s;text-align:center}
+.btn:active{transform:scale(.97)}
+.bgold{background:linear-gradient(135deg,#9a7224,var(--gold));color:#0d1f13;box-shadow:0 4px 18px rgba(201,168,76,.22)}
+.bol{background:transparent;border:1px solid var(--bd2);color:var(--mu2)}
+.bdng{background:transparent;border:1px solid rgba(224,90,75,.35);color:var(--dng)}
+.mt10{margin-top:10px}
+
+/* TOPBAR */
+.tb{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:12px 16px 10px;border-bottom:1px solid var(--bd2);background:rgba(12,28,18,.93);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.tb-t{font-size:1.1rem;color:var(--gl);font-weight:700}
+.tb-r{display:flex;gap:8px;align-items:center}
+.lbtn{height:26px;padding:0 9px;border-radius:13px;border:1px solid var(--bdr);background:rgba(0,0,0,.2);color:var(--gd);font-size:.7rem;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.05em;transition:background .2s}
+.lbtn:active{background:rgba(201,168,76,.1)}
+.ibtn{height:26px;padding:0 10px;border-radius:13px;border:1px solid var(--bdr);background:rgba(201,168,76,.1);color:var(--gl);font-size:.74rem;font-weight:700;cursor:pointer;font-family:inherit;transition:background .2s}
+.ibtn:active{background:rgba(201,168,76,.2)}
+.xbtn{width:28px;height:28px;border-radius:50%;border:1px solid var(--bd2);background:rgba(0,0,0,.2);color:var(--mu2);font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;flex-shrink:0}
+.pbtn{width:30px;height:30px;border-radius:50%;border:1px solid var(--bdr);background:rgba(201,168,76,.08);color:var(--gl);font-size:1.1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;flex-shrink:0}
+
+/* BOTTOM NAV */
+.bnav{flex-shrink:0;display:flex;border-top:1px solid var(--bd2);background:rgba(10,24,16,.98);backdrop-filter:blur(18px);z-index:10}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 4px 12px;gap:3px;cursor:pointer;border:none;background:transparent;color:var(--mu);font-family:inherit;font-size:.58rem;font-weight:500;transition:color .2s;position:relative}
+.ni-i{font-size:1.2rem;transition:transform .22s cubic-bezier(.34,1.56,.64,1)}
+.ni.on{color:var(--gl)}
+.ni.on .ni-i{transform:scale(1.15) translateY(-1px)}
+.ni::after{content:'';position:absolute;top:0;left:22%;right:22%;height:2px;border-radius:0 0 3px 3px;background:linear-gradient(90deg,transparent,var(--gd),transparent);opacity:0;transition:opacity .22s}
+.ni.on::after{opacity:1}
+
+/* SHARED */
+.card{background:var(--card);border:1px solid var(--bd2);border-radius:var(--r);padding:16px;margin-bottom:12px;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gd),transparent)}
+.ct{font-size:.93rem;font-weight:700;color:var(--gl);margin-bottom:3px}
+.cd{font-size:.76rem;color:var(--mu);margin-bottom:12px;line-height:1.5}
+.fgrp{margin-bottom:10px}.fgrp:last-child{margin-bottom:0}
+.fl{display:block;font-size:.73rem;color:var(--mu);margin-bottom:4px;font-weight:500}
+.fw{display:flex;align-items:center;background:rgba(0,0,0,.24);border:1px solid rgba(201,168,76,.1);border-radius:var(--rx);overflow:hidden;transition:border-color .2s,box-shadow .2s}
+.fw:focus-within{border-color:var(--gd);box-shadow:0 0 0 3px rgba(201,168,76,.06)}
+.fp{padding:0 10px;font-size:.76rem;color:var(--gd);height:42px;display:flex;align-items:center;white-space:nowrap;flex-shrink:0}
+[dir=rtl] .fp{border-left:1px solid rgba(201,168,76,.1)}[dir=ltr] .fp{border-right:1px solid rgba(201,168,76,.1)}
+.fi{flex:1;background:transparent;border:none;outline:none;color:var(--tx);font-size:.9rem;padding:0 11px;height:42px;font-family:inherit;width:100%}
+.fi::placeholder{color:rgba(255,255,255,.17)}
+.sel{width:100%;background:rgba(0,0,0,.24);border:1px solid rgba(201,168,76,.1);border-radius:var(--rx);color:var(--tx);font-family:inherit;font-size:.86rem;padding:10px 12px;outline:none;appearance:none;background-repeat:no-repeat;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238a6e30' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")}
+[dir=rtl] .sel{background-position:right 11px center;padding-right:30px}[dir=ltr] .sel{background-position:left 11px center;padding-left:30px}
+.sel option{background:#1c3828}
+.tbns{display:flex;background:rgba(0,0,0,.22);border:1px solid rgba(201,168,76,.1);border-radius:var(--rx);overflow:hidden}
+.tbn{flex:1;padding:10px 6px;text-align:center;font-size:.8rem;border:none;background:transparent;color:var(--mu);cursor:pointer;font-family:inherit;font-weight:500;transition:all .2s}
+.tbn.on{background:linear-gradient(135deg,var(--gd),#a07828);color:#fff;font-weight:700}
+.nbox{background:rgba(201,168,76,.05);padding:9px 12px;font-size:.74rem;color:var(--mu);line-height:1.55;margin-top:9px;border-radius:var(--rx)}
+[dir=rtl] .nbox{border-right:3px solid var(--gd)}[dir=ltr] .nbox{border-left:3px solid var(--gd)}
+.nbox strong{color:var(--gl)}
+.divtx{display:flex;align-items:center;gap:8px;margin:10px 0;color:var(--mu);font-size:.72rem}
+.divtx::before,.divtx::after{content:'';flex:1;height:1px;background:var(--bd2)}
+.ebx{text-align:center;padding:32px 18px;color:var(--mu)}
+.ei{font-size:2rem;margin-bottom:8px;opacity:.45;animation:bob 3s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.et{font-size:.82rem;line-height:1.6}
+.tg{color:var(--gl)}.tgr{color:var(--grl)}.tr{color:var(--dng)}
+.hidden{display:none!important}
+
+/* DASHBOARD */
+.hero{margin:14px 14px 0;background:linear-gradient(135deg,#1a3c28,#0f2318);border:1px solid var(--bdr);border-radius:var(--r);padding:18px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(45deg,transparent,transparent 18px,rgba(201,168,76,.012) 18px,rgba(201,168,76,.012) 19px)}
+.hbdg{position:absolute;top:14px;font-size:.67rem;color:var(--gd);background:rgba(201,168,76,.08);border:1px solid var(--bdr);border-radius:18px;padding:3px 9px}
+[dir=rtl] .hbdg{left:14px}[dir=ltr] .hbdg{right:14px}
+.hg{font-size:.76rem;color:var(--mu);margin-bottom:2px;position:relative}
+.hn{font-size:1.4rem;color:var(--gl);font-weight:700;position:relative}
+.hv{font-size:.73rem;color:var(--mu);margin-top:7px;position:relative;font-style:italic;line-height:1.5}
+
+/* ALL-YEARS SUMMARY CARD */
+.ays-card{margin:11px 14px 0;background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);padding:14px;position:relative;overflow:hidden}
+.ays-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.ays-title{font-size:.78rem;font-weight:700;color:var(--gl);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.ays-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:9px}
+.ays-cell{text-align:center;background:rgba(0,0,0,.18);border-radius:var(--rx);padding:7px 4px}
+.ays-v{font-size:.9rem;font-weight:700;margin-bottom:1px}
+.ays-l{font-size:.6rem;color:var(--mu)}
+.ays-bar{height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}
+.ays-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--grd),var(--grl));transition:width .8s cubic-bezier(.4,0,.2,1)}
+.ays-fill.done{background:linear-gradient(90deg,var(--gd),var(--gold))}
+.ays-pct{text-align:center;font-size:.64rem;color:var(--mu);margin-top:4px}
+
+.ytw{padding:12px 14px 0}
+.yts{display:flex;gap:7px;overflow-x:auto;padding-bottom:3px;scrollbar-width:none}
+.yts::-webkit-scrollbar{display:none}
+.ytb{flex-shrink:0;padding:6px 13px;border-radius:18px;font-size:.77rem;font-weight:600;border:1px solid var(--bd2);background:transparent;color:var(--mu);cursor:pointer;font-family:inherit;transition:all .22s}
+.ytb.on{background:linear-gradient(135deg,var(--gd),var(--gold));color:#0d1f13;border-color:transparent;box-shadow:0 2px 10px rgba(201,168,76,.2)}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:11px 14px 0}
+.sc{background:var(--card);border:1px solid var(--bd2);border-radius:var(--rs);padding:12px;position:relative;overflow:hidden;cursor:pointer;transition:transform .15s,border-color .2s}
+.sc:active{transform:scale(.96)}
+.sc.w{grid-column:1/-1}
+.sc::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--bd2),transparent)}
+.sc.acc::after{background:linear-gradient(90deg,transparent,var(--gd),transparent)}
+.si{font-size:1.3rem;margin-bottom:5px}
+.slb{font-size:.69rem;color:var(--mu);margin-bottom:2px}
+.sv{font-size:.98rem;font-weight:700}
+.vg{color:var(--gl)}.vgr{color:var(--grl)}.vr{color:var(--dng)}
+.rsec{margin:11px 14px 0;background:var(--card);border:1px solid var(--bd2);border-radius:var(--r);padding:16px}
+.rt{font-size:.87rem;font-weight:600;color:var(--gl);margin-bottom:12px}
+.rfx{display:flex;align-items:center;gap:15px}
+.rw{position:relative;width:90px;height:90px;flex-shrink:0}
+.rsvg{transform:rotate(-90deg)}
+.rbg{fill:none;stroke:rgba(255,255,255,.06);stroke-width:7}
+.rfill{fill:none;stroke:url(#rg);stroke-width:7;stroke-linecap:round;transition:stroke-dashoffset .8s cubic-bezier(.4,0,.2,1)}
+.rct{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.rp{font-size:1.18rem;font-weight:700;color:var(--gl)}
+.rsb{font-size:.56rem;color:var(--mu);margin-top:1px}
+.ri{flex:1}.rir{margin-bottom:8px}.ril{font-size:.69rem;color:var(--mu);margin-bottom:1px}.riv{font-size:.87rem;font-weight:600}
+.shdr{display:flex;align-items:center;justify-content:space-between;padding:13px 14px 7px}
+.sht{font-size:.91rem;font-weight:700}
+.shl{font-size:.76rem;color:var(--gd);cursor:pointer;background:none;border:none;font-family:inherit}
+.pit{display:flex;align-items:center;gap:11px;padding:10px 14px;border-bottom:1px solid var(--bd2)}
+.pit:last-child{border-bottom:none}
+.pit-o{width:36px;height:36px;border-radius:50%;background:rgba(61,160,104,.1);border:1px solid rgba(61,160,104,.2);display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0}
+.pit-d{flex:1;min-width:0}
+.pit-w{font-size:.83rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pit-wh{font-size:.69rem;color:var(--mu);margin-top:1px}
+.pit-a{font-size:.89rem;font-weight:700;color:var(--grl);white-space:nowrap}
+
+/* WIZARD */
+.whdr{padding:16px 14px 0}
+.wtop{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
+.wnum{font-size:.69rem;color:var(--gd);font-weight:600;margin-bottom:2px}
+.wtit{font-size:1.32rem;font-weight:700;line-height:1.2}
+.dots{display:flex;gap:4px;margin-top:5px}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--bd2);transition:all .35s cubic-bezier(.34,1.56,.64,1)}
+.dot.dn{background:var(--gd)}.dot.ac{background:var(--gold);width:20px;border-radius:3px}
+.wb{padding:12px 14px}
+.wa{padding:2px 14px 18px;display:flex;flex-direction:column;gap:9px}
+.edit-banner{margin:0 14px 0;background:rgba(201,168,76,.06);border:1px solid var(--bdr);border-radius:var(--rx);padding:9px 13px;font-size:.78rem;color:var(--gd);text-align:center}
+.nh-btn{float:right;padding:3px 9px;border-radius:12px;border:1px solid var(--bdr);background:rgba(201,168,76,.07);color:var(--gd);font-size:.7rem;cursor:pointer;font-family:inherit;margin-top:-2px;transition:background .2s}
+[dir=ltr] .nh-btn{float:left}
+.nh-btn:active{background:rgba(201,168,76,.16)}
+.nh-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem}
+.nh-row:last-child{border-bottom:none}
+.nh-cur{color:var(--gd);font-weight:700;width:38px}
+.nh-g{color:var(--gl);font-weight:600;flex:1;text-align:center}
+.nh-s{color:var(--mu2);flex:1;text-align:center}
+
+/* RESULT */
+.rh{text-align:center;padding:30px 18px 18px}
+.rb{width:86px;height:86px;margin:0 auto 15px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2rem;animation:popIn .4s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes popIn{from{transform:scale(0.5);opacity:0}to{transform:scale(1);opacity:1}}
+.rb.due{background:radial-gradient(circle,rgba(201,168,76,.2),rgba(201,168,76,.04));border:1.5px solid var(--gd);animation:popIn .4s cubic-bezier(.34,1.56,.64,1) both,glow 2.5s ease-in-out .5s infinite}
+.rb.nd{background:radial-gradient(circle,rgba(45,122,79,.2),rgba(45,122,79,.04));border:1.5px solid var(--grn)}
+.rl{font-size:.68rem;text-transform:uppercase;letter-spacing:.12em;color:var(--mu);margin-bottom:6px}
+.ra{font-size:2.6rem;font-weight:700;color:var(--gl);line-height:1;animation:countUp .5s ease .2s both}
+@keyframes countUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.rsym{font-size:.98rem;color:var(--gd)}
+.rm{font-size:.81rem;color:var(--mu);margin-top:8px;line-height:1.6}
+.sumc{margin:0 14px 12px;background:var(--card);border:1px solid var(--bd2);border-radius:var(--r);padding:15px}
+.sr{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.81rem}
+.sr:last-child{border-bottom:none}
+.srl{color:var(--mu)}.srv{font-weight:600}
+.sr-t{border-top:1px solid var(--bdr);padding-top:10px;margin-top:3px;font-size:.87rem}
+.sr-t .srl{color:var(--tx);font-weight:600}.sr-t .srv{color:var(--gl)}
+.sr-n .srv{color:var(--grl)}.sr-d .srv{color:var(--dng)}.sr-z .srv{color:var(--gl);font-size:1rem}
+.ra2{padding:0 14px 20px;display:flex;flex-direction:column;gap:8px}
+
+/* HISTORY — restored original clean card + small icon buttons */
+.hl{padding:12px 14px}
+.hi{background:var(--card);border:1px solid var(--bd2);border-radius:var(--rs);padding:13px;margin-bottom:10px;position:relative;overflow:hidden;transition:transform .2s,opacity .2s}
+[dir=rtl] .hi{border-right:3px solid var(--gd)}[dir=ltr] .hi{border-left:3px solid var(--gd)}
+.hi.nd{border-right-color:var(--grn);border-left-color:var(--grn)}
+.hr1{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.hy{font-size:.96rem;font-weight:700;color:var(--gl)}
+.hd{font-size:.69rem;color:var(--mu);margin-top:2px}
+/* Small icon-only buttons — original aesthetic */
+.hico-row{display:flex;gap:5px;flex-shrink:0}
+.hico{width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.2);font-size:.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;transition:background .2s;flex-shrink:0;border:1px solid var(--bd2);line-height:1}
+.hico.edt{border-color:rgba(201,168,76,.25);color:var(--gd)}
+.hico.edt:active{background:rgba(201,168,76,.12)}
+.hico.del{border-color:rgba(224,90,75,.3);color:var(--dng)}
+.hico.del:active{background:rgba(224,90,75,.15)}
+.hg2{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.hst{background:rgba(0,0,0,.2);border-radius:var(--rx);padding:7px 9px}
+.hsl{font-size:.65rem;color:var(--mu);margin-bottom:1px}
+.hsv{font-size:.83rem;font-weight:600}
+
+/* PAYMENTS */
+.psum{margin:13px 14px 0;background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);padding:16px}
+.pst{font-size:.87rem;font-weight:700;color:var(--gl);margin-bottom:11px}
+.p3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:11px}
+.p3c{text-align:center}
+.p3v{font-size:1.03rem;font-weight:700;margin-bottom:1px}
+.p3l{font-size:.64rem;color:var(--mu)}
+.pbg{height:7px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}
+.pbf{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--grd),var(--grl));transition:width .7s cubic-bezier(.4,0,.2,1)}
+.pbf.done{background:linear-gradient(90deg,var(--gd),var(--gold))}
+.pbc{text-align:center;font-size:.69rem;color:var(--mu);margin-top:5px}
+.pytw{padding:10px 14px 0}
+.pyts{display:flex;gap:6px;overflow-x:auto;padding-bottom:3px;scrollbar-width:none}
+.pyts::-webkit-scrollbar{display:none}
+.pytb{flex-shrink:0;padding:5px 12px;border-radius:16px;font-size:.76rem;font-weight:600;border:1px solid var(--bd2);background:transparent;color:var(--mu);cursor:pointer;font-family:inherit;transition:all .22s}
+.pytb.on{background:var(--c2);color:var(--gl);border-color:var(--bdr)}
+.yrd{margin:10px 14px 0;background:var(--c2);border:1px solid var(--bd2);border-radius:var(--rs);padding:13px}
+.pls{padding:3px 14px 0}
+/* Swipe-to-delete */
+.pc-wrap{position:relative;margin-bottom:8px;border-radius:var(--rs);overflow:hidden}
+.pc-del-bg{position:absolute;inset:0;background:linear-gradient(90deg,var(--dng),#c23327);display:flex;align-items:center;border-radius:var(--rs)}
+[dir=rtl] .pc-del-bg{justify-content:flex-start;padding-right:18px}
+[dir=ltr] .pc-del-bg{justify-content:flex-end;padding-left:18px}
+.pc-del-bg span{font-size:1.1rem}
+.pc{background:var(--card);border:1px solid var(--bd2);border-radius:var(--rs);padding:12px 13px;display:flex;align-items:center;gap:11px;will-change:transform;transition:transform .05s linear,opacity .2s;cursor:default;touch-action:pan-y;position:relative;z-index:1}
+.pc.swiping{transition:none}
+.pci{width:40px;height:40px;border-radius:50%;flex-shrink:0;background:rgba(76,175,125,.1);border:1px solid rgba(76,175,125,.2);display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+.pcb{flex:1;min-width:0}
+.pcw{font-size:.85rem;font-weight:600}
+.pcn{font-size:.7rem;color:var(--mu);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcd{font-size:.67rem;color:var(--mu);margin-top:2px}
+.pcr{flex-shrink:0}
+.pca{font-size:.91rem;font-weight:700;color:var(--grl)}
+
+/* PROFILE */
+.ph{text-align:center;padding:26px 18px 16px}
+.pav{width:70px;height:70px;border-radius:50%;margin:0 auto 11px;background:linear-gradient(135deg,var(--gd),var(--gold));display:flex;align-items:center;justify-content:center;font-size:1.75rem;font-weight:700;color:#0d1f13;border:2px solid rgba(201,168,76,.3);animation:popIn .4s cubic-bezier(.34,1.56,.64,1) both}
+.pnm{font-size:1.22rem;font-weight:700;color:var(--gl)}
+.pem{font-size:.77rem;color:var(--mu);margin-top:2px}
+.psn{display:inline-block;margin-top:7px;font-size:.68rem;color:var(--mu);background:var(--gdim);border:1px solid var(--bdr);border-radius:18px;padding:3px 11px}
+.psec{margin:0 14px 12px}
+.psect{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--mu);margin-bottom:7px;padding:0 2px}
+.pblk{background:var(--card);border:1px solid var(--bd2);border-radius:var(--rs);overflow:hidden}
+.pit2{display:flex;align-items:center;gap:12px;padding:12px 13px;border-bottom:1px solid var(--bd2);cursor:pointer;transition:background .15s}
+.pit2:last-child{border-bottom:none}
+.pit2:active{background:rgba(255,255,255,.03)}
+.pit2-i{font-size:.93rem;width:20px;text-align:center;flex-shrink:0}
+.pit2-l{flex:1;font-size:.85rem}
+.pit2-v{font-size:.78rem;color:var(--mu)}
+.pit2-arr{font-size:.7rem;color:var(--mu);opacity:.5}
+/* Install banner */
+.inst-banner{margin:0 14px 12px;background:linear-gradient(135deg,rgba(201,168,76,.1),rgba(201,168,76,.04));border:1px solid var(--bdr);border-radius:var(--rs);padding:13px;display:flex;align-items:center;gap:11px;cursor:pointer;transition:background .2s}
+.inst-banner:active{background:rgba(201,168,76,.15)}
+.inst-ico{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--gd),var(--gold));display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+.inst-tx{flex:1}
+.inst-t{font-size:.84rem;font-weight:700;color:var(--gl)}
+.inst-s{font-size:.71rem;color:var(--mu);margin-top:2px}
+
+/* MODALS */
+.mov{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:none;align-items:flex-end;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}
+.mov.on{display:flex}
+.msh{background:var(--sur);border-radius:20px 20px 0 0;border-top:1px solid var(--bdr);width:100%;max-width:480px;margin:0 auto;padding:20px 16px 38px;animation:sup .3s cubic-bezier(.4,0,.2,1)}
+@keyframes sup{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.mhd{width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,.13);margin:0 auto 15px}
+.mtt{font-size:1rem;font-weight:700;color:var(--gl);margin-bottom:15px}
+.mtt-s{font-size:.78rem;color:var(--mu);font-weight:400;margin-top:2px}
+
+/* TOAST */
+#toast{position:fixed;bottom:86px;left:50%;transform:translateX(-50%) translateY(14px);background:#1e3a28;border:1px solid var(--bdr);border-radius:22px;padding:9px 20px;font-size:.82rem;color:var(--tx);white-space:nowrap;z-index:300;opacity:0;transition:all .3s cubic-bezier(.4,0,.2,1);pointer-events:none;box-shadow:0 4px 20px rgba(0,0,0,.35)}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* TOGGLE SWITCH */
+.tog{width:40px;height:22px;border-radius:11px;background:rgba(255,255,255,.12);border:none;cursor:pointer;position:relative;flex-shrink:0;transition:background .25s;padding:0}
+.tog.on{background:var(--grn)}
+.tog::after{content:'';position:absolute;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.22s cubic-bezier(.34,1.56,.64,1)}
+[dir=rtl] .tog::after{right:3px}[dir=ltr] .tog::after{left:3px}
+[dir=rtl] .tog.on::after{right:calc(100% - 19px)}[dir=ltr] .tog.on::after{left:calc(100% - 19px)}
+
+/* BACKUP SETTINGS */
+.bk-row{display:flex;align-items:center;gap:9px;padding:11px 13px;border-bottom:1px solid var(--bd2)}
+.bk-row:last-child{border-bottom:none}
+.bk-ico{font-size:.9rem;width:20px;text-align:center;flex-shrink:0}
+.bk-body{flex:1;min-width:0}
+.bk-t{font-size:.84rem;font-weight:600;color:var(--tx)}
+.bk-s{font-size:.7rem;color:var(--mu);margin-top:1px;line-height:1.4}
+.bk-sel{background:rgba(0,0,0,.28);border:1px solid rgba(201,168,76,.14);border-radius:var(--rx);color:var(--tx);font-family:inherit;font-size:.74rem;padding:5px 9px;outline:none;cursor:pointer}
+.bk-inp{flex:1;background:rgba(0,0,0,.28);border:1px solid rgba(201,168,76,.14);border-radius:var(--rx);color:var(--tx);font-family:inherit;font-size:.74rem;padding:5px 9px;outline:none;min-width:0}
+.bk-inp:focus{border-color:var(--gd)}
+.bk-inp::placeholder{color:rgba(255,255,255,.2)}
+.bk-btn{padding:5px 11px;border-radius:var(--rx);border:1px solid var(--bdr);background:rgba(201,168,76,.07);color:var(--gd);font-size:.72rem;cursor:pointer;font-family:inherit;font-weight:600;white-space:nowrap;transition:background .15s;flex-shrink:0}
+.bk-btn:active{background:rgba(201,168,76,.18)}
+.bk-btn.dng{border-color:rgba(224,90,75,.3);background:rgba(224,90,75,.07);color:var(--dng)}
+.bk-hint{font-size:.7rem;color:var(--mu);line-height:1.5;padding:0 13px 10px}
+
+/* EXPORT CHOICE OPTIONS */
+.exp-opt{display:flex;align-items:center;gap:12px;padding:13px;background:var(--card);border:1px solid var(--bd2);border-radius:var(--rs);cursor:pointer;margin-bottom:9px;transition:border-color .2s}
+.exp-opt:active{border-color:var(--gd)}
+.exp-ico{width:42px;height:42px;border-radius:var(--rs);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0}
+.exp-ico.enc{background:rgba(201,168,76,.12);border:1px solid var(--bdr)}
+.exp-ico.plain{background:rgba(61,160,104,.1);border:1px solid rgba(61,160,104,.2)}
+.exp-ob{flex:1}
+.exp-ot{font-size:.87rem;font-weight:700}
+.exp-os{font-size:.7rem;color:var(--mu);margin-top:2px}
+
+/* REMAINING HINT IN PAYMENT MODAL */
+.mrem-hint{margin-top:7px;background:rgba(201,168,76,.05);border-radius:var(--rx);padding:8px 12px;font-size:.77rem}
+.mrem-row{display:flex;justify-content:space-between;padding:2px 0}
+
+/* DRIVE RESTORE LIST */
+.drfile{display:flex;align-items:center;gap:10px;padding:10px 13px;border-bottom:1px solid var(--bd2);cursor:pointer;transition:background .15s}
+.drfile:last-child{border-bottom:none}
+.drfile:active{background:rgba(255,255,255,.03)}
+.drfile-n{font-size:.83rem;font-weight:600}
+.drfile-d{font-size:.68rem;color:var(--mu);margin-top:1px}
+
+input[type=file]{display:none}
+</style>
+</head>
+<body>
+
+<div id="BG">
+  <svg viewBox="0 0 400 860" preserveAspectRatio="xMidYMid slice">
+    <defs><pattern id="ip" x="0" y="0" width="58" height="58" patternUnits="userSpaceOnUse">
+      <polygon points="29,2 36,9 47,9 47,20 54,29 47,38 47,49 36,49 29,56 22,49 11,49 11,38 4,29 11,20 11,9 22,9" fill="none" stroke="#c9a84c" stroke-width=".44"/>
+      <circle cx="29" cy="29" r="5" fill="none" stroke="#c9a84c" stroke-width=".38"/>
+    </pattern></defs>
+    <rect width="400" height="860" fill="url(#ip)"/>
+  </svg>
+</div>
+<div class="blob b1"></div><div class="blob b2"></div>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#8a6e30"/><stop offset="100%" stop-color="#e8c97a"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<div id="app">
+
+<!-- ══ AUTH ══ -->
+<div class="scr on" id="sa">
+  <div class="aw">
+    <div class="alo">
+      <div class="sring">
+        <!-- Crescent + Star App Icon -->
+        <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Crescent moon -->
+          <path d="M28 9 C17 9 10 18 10 28 C10 38 17 47 28 47 C22 47 16 40 16 28 C16 16 22 9 28 9Z"
+            fill="#c9a84c" opacity=".95"/>
+          <!-- Five-pointed star -->
+          <polygon points="40,8 41.8,14.5 48.5,14.5 43.2,18.6 45.2,25.2 40,21.2 34.8,25.2 36.8,18.6 31.5,14.5 38.2,14.5"
+            fill="#c9a84c"/>
+          <!-- Inner glow ring hint -->
+          <circle cx="28" cy="28" r="18" fill="none" stroke="rgba(201,168,76,.18)" stroke-width=".8"/>
+        </svg>
+      </div>
+      <h1 id="ah1">زكاة المال</h1>
+      <p id="ap">حاسبة الزكاة الذكية</p>
+    </div>
+    <div style="text-align:center;margin-bottom:16px">
+      <button class="lbtn" onclick="toggleLang()">EN</button>
+    </div>
+    <div class="atabs">
+      <button class="atb on" id="at-in" onclick="showForm('in')">تسجيل الدخول</button>
+      <button class="atb" id="at-up" onclick="showForm('up')">حساب جديد</button>
+    </div>
+    <div class="aerr" id="aerr"></div>
+    <div id="f-in">
+      <div class="fg"><label id="ll-u">اسم المستخدم</label><input class="inp" type="text" id="lu" autocomplete="username"/></div>
+      <div class="fg"><label id="ll-p">كلمة المرور</label><input class="inp" type="password" id="lp" autocomplete="current-password"/></div>
+      <button class="btn bgold" id="btn-in" onclick="doLogin()">دخول ←</button>
+    </div>
+    <div id="f-up" class="hidden">
+      <div class="fg"><label id="ll-n">الاسم الكامل</label><input class="inp" type="text" id="rn"/></div>
+      <div class="fg"><label id="ll-u2">اسم المستخدم</label><input class="inp" type="text" id="ru"/></div>
+      <div class="fg"><label id="ll-e">البريد الإلكتروني (اختياري)</label><input class="inp" type="email" id="re"/></div>
+      <div class="fg"><label id="ll-p2">كلمة المرور</label><input class="inp" type="password" id="rp" autocomplete="new-password"/></div>
+      <button class="btn bgold" id="btn-up" onclick="doRegister()">إنشاء الحساب ←</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MAIN SHELL ══ -->
+<div class="shell" id="main">
+
+  <!-- Dashboard — NO FAB -->
+  <div class="scr on" id="s-dash">
+    <div class="tb">
+      <div class="tb-t amiri cg" id="tbt-d">الرئيسية</div>
+      <div class="tb-r"><button class="lbtn" onclick="toggleLang()">EN</button></div>
+    </div>
+    <div class="ca" id="dc"></div>
+  </div>
+
+  <!-- History -->
+  <div class="scr" id="s-hist">
+    <div class="tb">
+      <div class="tb-t amiri cg" id="tbt-h">السجل</div>
+      <div class="tb-r">
+        <button class="lbtn" onclick="toggleLang()">EN</button>
+        <button class="ibtn" id="ncb" onclick="startCalc()">+ حساب</button>
+      </div>
+    </div>
+    <div class="ca" id="hc"></div>
+  </div>
+
+  <!-- Payments -->
+  <div class="scr" id="s-pay">
+    <div class="tb">
+      <div class="tb-t amiri cg" id="tbt-p">الدفعات</div>
+      <div class="tb-r">
+        <button class="lbtn" onclick="toggleLang()">EN</button>
+        <button class="pbtn" onclick="openModal()">+</button>
+      </div>
+    </div>
+    <div class="ca" id="pc"></div>
+  </div>
+
+  <!-- Profile -->
+  <div class="scr" id="s-prof">
+    <div class="tb">
+      <div class="tb-t amiri cg" id="tbt-pr">حسابي</div>
+      <div class="tb-r"><button class="lbtn" onclick="toggleLang()">EN</button></div>
+    </div>
+    <div class="ca" id="prc"></div>
+  </div>
+
+  <!-- Wizard -->
+  <div class="scr" id="s-calc">
+    <div class="tb">
+      <div class="tb-t amiri cg" id="tbt-c">حساب زكاة جديد</div>
+      <div class="tb-r">
+        <button class="lbtn" onclick="toggleLang()">EN</button>
+        <button class="xbtn" onclick="goHome()">✕</button>
+      </div>
+    </div>
+    <div class="ca" id="cc"></div>
+  </div>
+
+  <!-- Result -->
+  <div class="scr" id="s-res">
+    <div class="tb">
+      <div class="tb-t amiri cg" id="tbt-r">نتيجة الحساب</div>
+      <div class="tb-r">
+        <button class="lbtn" onclick="toggleLang()">EN</button>
+        <button class="xbtn" onclick="goHome()">✕</button>
+      </div>
+    </div>
+    <div class="ca" id="rc"></div>
+  </div>
+
+  <nav class="bnav">
+    <button class="ni on" id="n-dash" onclick="goNav('dash')"><span class="ni-i">🏠</span><span id="nl-d">الرئيسية</span></button>
+    <button class="ni" id="n-hist" onclick="goNav('hist')"><span class="ni-i">📋</span><span id="nl-h">السجل</span></button>
+    <button class="ni" id="n-pay" onclick="goNav('pay')"><span class="ni-i">💳</span><span id="nl-p">الدفعات</span></button>
+    <button class="ni" id="n-prof" onclick="goNav('prof')"><span class="ni-i">👤</span><span id="nl-pr">حسابي</span></button>
+  </nav>
+</div>
+
+<!-- ══ PAYMENT MODAL ══ -->
+<div class="mov" id="pmod">
+  <div class="msh">
+    <div class="mhd"></div>
+    <div class="mtt" id="mod-t">إضافة دفعة زكاة 🤲</div>
+    <div class="fg"><label id="ml-w">الجهة المستفيدة</label><input class="inp" type="text" id="mw" placeholder=""/></div>
+    <div class="fg"><label id="ml-a">المبلغ</label><div class="fw"><span class="fp" id="msym">EGP</span><input class="fi" type="number" id="ma" min="0" placeholder="0"/></div></div>
+    <div class="fg"><label id="ml-y">ربط بسنة</label><select class="sel" id="my"></select><div id="mrem"></div></div>
+    <div class="fg"><label id="ml-d">التاريخ</label><input class="inp" type="date" id="md" style="color-scheme:dark"/></div>
+    <div class="fg"><label id="ml-n">ملاحظة (اختياري)</label><input class="inp" type="text" id="mn"/></div>
+    <button class="btn bgold" id="msave" onclick="savePayment()">حفظ الدفعة</button>
+    <button class="btn bol mt10" id="mcancel" onclick="closeModal()">إلغاء</button>
+  </div>
+</div>
+
+<!-- ══ NISAB HELPER MODAL ══ -->
+<div class="mov" id="nmod">
+  <div class="msh">
+    <div class="mhd"></div>
+    <div class="mtt" id="nmod-t">📖 مرجع قيم النصاب<div class="mtt-s" id="nmod-s">القيم التقريبية لعام 2025</div></div>
+    <div style="display:grid;grid-template-columns:38px 1fr 1fr;gap:0;font-size:.69rem;color:var(--mu);padding:0 0 6px;font-weight:600">
+      <div></div><div id="nh-gh" style="text-align:center">ذهب 85جم</div><div id="nh-sh" style="text-align:center">فضة 595جم</div>
+    </div>
+    <div id="nmod-body"></div>
+    <div class="nbox" id="nmod-note" style="margin-top:10px">⚠️ <strong>تنبيه:</strong> هذه قيم تقريبية للمرجعية فقط. استخدم السعر اليومي الفعلي لدقة أكبر.</div>
+    <button class="btn bol mt10" onclick="closeNmod()">إغلاق</button>
+  </div>
+</div>
+
+<!-- ══ ENCRYPTION MODAL ══ -->
+<div class="mov" id="emod">
+  <div class="msh">
+    <div class="mhd"></div>
+    <div class="mtt" id="emod-t">🔐 تشفير البيانات</div>
+    <div class="fg"><label id="emod-l">كلمة المرور</label><input class="inp" type="password" id="emod-pw" placeholder="4 أحرف على الأقل"/></div>
+    <div class="nbox" id="emod-hint"></div>
+    <button class="btn bgold mt10" onclick="doEnc()">تأكيد</button>
+    <button class="btn bol mt10" onclick="closeEmod()">إلغاء</button>
+  </div>
+</div>
+
+<!-- ══ EXPORT CHOICE MODAL ══ -->
+<div class="mov" id="expmod">
+  <div class="msh">
+    <div class="mhd"></div>
+    <div class="mtt" id="expmod-t">📤 تصدير نسخة احتياطية</div>
+    <div class="exp-opt" onclick="doExportEnc()">
+      <div class="exp-ico enc">🔐</div>
+      <div class="exp-ob"><div class="exp-ot" id="expmod-enc-t">مشفّر (.zak)</div><div class="exp-os" id="expmod-enc-s">محمي بكلمة مرور</div></div>
+      <div style="color:var(--gd);font-size:.85rem" id="expmod-arr1">←</div>
+    </div>
+    <div class="exp-opt" onclick="doExportPlain()">
+      <div class="exp-ico plain">📄</div>
+      <div class="exp-ob"><div class="exp-ot" id="expmod-plain-t">عادي (.json)</div><div class="exp-os" id="expmod-plain-s">بدون تشفير</div></div>
+      <div style="color:var(--grl);font-size:.85rem" id="expmod-arr2">←</div>
+    </div>
+    <button class="btn bol mt10" onclick="document.getElementById('expmod').classList.remove('on')">إلغاء</button>
+  </div>
+</div>
+
+<!-- ══ DRIVE RESTORE MODAL ══ -->
+<div class="mov" id="drmod">
+  <div class="msh">
+    <div class="mhd"></div>
+    <div class="mtt" id="drmod-t">⬆️ استعادة من درايف</div>
+    <div id="drmod-list" style="max-height:55vh;overflow-y:auto;border-radius:var(--rs);overflow:hidden;background:var(--card);border:1px solid var(--bd2)"></div>
+    <button class="btn bol mt10" onclick="document.getElementById('drmod').classList.remove('on')">إلغاء</button>
+  </div>
+</div>
+
+<!-- ══ INSTALL MODAL ══ -->
+<div class="mov" id="imod">
+  <div class="msh">
+    <div class="mhd"></div>
+    <div class="mtt" id="imod-t">📲 تثبيت التطبيق</div>
+    <div id="imod-body"></div>
+    <button class="btn bgold mt10" id="imod-btn" onclick="doInstall()">تثبيت الآن</button>
+    <button class="btn bol mt10" onclick="closeImod()">لاحقاً</button>
+  </div>
+</div>
+
+<input type="file" id="import-file" accept=".json,.zak" onchange="importData(this)"/>
+<div id="toast"></div>
+
+<script>
+/* ════════════════════════════════════════
+   PWA SETUP
+════════════════════════════════════════ */
+(function(){
+  var iconSvg = '%3Csvg xmlns%3D\'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg\' viewBox%3D\'0 0 192 192\'%3E%3Crect width%3D\'192\' height%3D\'192\' rx%3D\'38\' fill%3D\'%230d1f13\'%2F%3E%3Cpath d%3D\'M96 28 C68 28 48 52 48 80 C48 108 68 132 96 132 C80 132 64 114 64 80 C64 46 80 28 96 28Z\' fill%3D\'%23c9a84c\'%2F%3E%3Cpolygon points%3D\'132 22 137 42 158 42 142 55 148 75 132 62 116 75 122 55 106 42 127 42\' fill%3D\'%23c9a84c\'%2F%3E%3C%2Fsvg%3E';
+  var manifest = {
+    name:'زكاة المال · Zakah Calculator', short_name:'زكاة',
+    start_url:'.', display:'standalone',
+    display_override:['window-controls-overlay','standalone','minimal-ui'],
+    orientation:'portrait', theme_color:'#0d1f13', background_color:'#0d1f13',
+    description:'حاسبة زكاة المال الذكية · Smart Zakah al-Mal Calculator',
+    categories:['finance','utilities'],
+    icons:[
+      {src:'data:image/svg+xml,'+iconSvg, sizes:'any', type:'image/svg+xml', purpose:'any maskable'}
+    ]
+  };
+  try{
+    // data: URI is more reliable than blob: for manifest across origins
+    var ml=document.getElementById('mlink');
+    ml.href='data:application/manifest+json,'+encodeURIComponent(JSON.stringify(manifest));
+    ml.setAttribute('crossorigin','use-credentials');
+  } catch(e){}
+  if('serviceWorker' in navigator){
+    var sw='const CACHE="zakat-v4";self.addEventListener("install",e=>{e.waitUntil(caches.open(CACHE).then(c=>c.add(location.href)));self.skipWaiting();});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(nr=>{return caches.open(CACHE).then(c=>{c.put(e.request,nr.clone());return nr;});})));});';
+    try{ navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'text/javascript'}))).then(function(r){r.update();}); }catch(e){}
+  }
+})();
+
+var _installPrompt = null;
+window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); _installPrompt=e; });
+function doInstall(){ if(_installPrompt){ _installPrompt.prompt(); _installPrompt.userChoice.then(function(){_installPrompt=null;closeImod();}); }else closeImod(); }
+function closeImod(){ document.getElementById('imod').classList.remove('on'); }
+
+/* ════════════════════════════════════════
+   I18N
+════════════════════════════════════════ */
+var L = 'ar';
+var I = {
+ar:{
+  app:'زكاة المال', sub:'حاسبة الزكاة الذكية',
+  tin:'تسجيل الدخول', tup:'حساب جديد',
+  lu:'اسم المستخدم', lp:'كلمة المرور', ln:'الاسم الكامل', le:'البريد الإلكتروني (اختياري)',
+  bin:'دخول ←', bup:'إنشاء الحساب ←',
+  e1:'يرجى ملء جميع الحقول', e2:'اسم المستخدم: 3 أحرف على الأقل',
+  e3:'كلمة المرور: 6 أحرف على الأقل', e4:'اسم المستخدم مستخدم بالفعل',
+  e5:'اسم المستخدم غير موجود', e6:'كلمة المرور غير صحيحة',
+  nd:'الرئيسية', nh:'السجل', np:'الدفعات', npr:'حسابي',
+  tbd:'الرئيسية', tbh:'السجل', tbp:'الدفعات', tbpr:'حسابي',
+  tbc:'حساب زكاة', tbr:'نتيجة الحساب', ncb:'+ حساب',
+  st:'الخطوة', of:'من',
+  wt1:'العملة والنصاب', wt2:'النقدية والمدخرات', wt3:'الذهب والاستثمارات', wt4:'الديون والالتزامات',
+  c1:'العملة', c1d:'اختر عملة حسابك',
+  c2:'معيار النصاب', c2d:'النصاب هو الحد الأدنى للثروة التي تجب فيها الزكاة.',
+  gs:'⚱️ ذهب (85جم)', ss:'🥈 فضة (595جم)',
+  c3:'قيمة النصاب', c3gd:'أدخل قيمة 85 جرامًا من الذهب بعملتك', c3sd:'أدخل قيمة 595 جرامًا من الفضة بعملتك',
+  ntip:'<strong>نصيحة:</strong> ابحث "سعر 85 جرام ذهب بالجنيه" للقيمة الحالية.',
+  nhlp:'📖 مرجع النصاب',
+  c4:'السنة', c4d:'السنة الميلادية لهذا الحساب',
+  ct1:'💵 النقدية في المنزل', ct1d:'نقود في المنزل أو المحفظة',
+  ct2:'🏦 الحسابات البنكية', ct2d:'أرصدة جميع حساباتك البنكية', cl2:'حساب التوفير', cl3:'الحساب الجاري',
+  ct3:'💳 مستحقات لك', ct3d:'أموال يدين بها لك الآخرون',
+  ct4:'⚱️ الذهب والفضة', ct4d:'أدخل القيمة السوقية الحالية.', cl5:'قيمة الذهب', cl6:'قيمة الفضة',
+  ct5:'📈 الاستثمارات', ct5d:'القيمة السوقية للأسهم والصناديق والعملات الرقمية',
+  cl7:'أسهم / صناديق', cl8:'عملات رقمية', cl9:'استثمارات أخرى',
+  ct6:'🏪 أصول تجارية', ct6d:'قيمة المخزون والبضاعة التجارية',
+  ct7:'📉 الديون المستحقة', ct7d:'يمكن خصم الديون المستحقة خلال العام.',
+  cl11:'ديون قصيرة الأمد', cl12:'فواتير مستحقة',
+  dn:'<strong>ملاحظة:</strong> المصاريف الشخصية لا تُخصم من الزكاة.',
+  nx:'التالي ←', bk:'→ رجوع', cb:'✦ احسب الزكاة', en:'يرجى إدخال قيمة النصاب',
+  edt:'تعديل', edtbanner:'وضع التعديل — سيتم تحديث الحساب الحالي', edtok:'✅ تم تحديث الحساب',
+  rdul:'زكاتك لهذا العام', rnd:'لا زكاة واجبة',
+  rdm:'ثروتك الصافية تتجاوز النصاب. تقبّل الله منك 🤲',
+  rndm:'ثروتك الصافية أقل من النصاب.',
+  smh:'📊 تفصيل الحساب', zr:'الزكاة 2.5%',
+  st1:'إجمالي الأصول', st2:'الديون المخصومة', st3:'الوعاء الزكوي',
+  st4:'النصاب', st5:'الزكاة الواجبة', ng_:'ذهب', ns_:'فضة',
+  btr:'💳 تتبّع الدفعات', bcp:'📋 نسخ الملخص', bnc:'🧮 حساب جديد', bhm:'→ الرئيسية',
+  gm:'صباح الخير،', ga:'مساء الخير،', ge:'مساء الخير،',
+  hij:'١٤٤٦ هـ', vrs:'وَأَقِيمُوا الصَّلَاةَ وَآتُوا الزَّكَاةَ',
+  noc:'لا يوجد حساب بعد. ابدأ بحساب زكاتك الآن!',
+  tz:'إجمالي الزكاة', pd:'المدفوع', rm:'المتبقي', cn:'احسب الآن', cl:'الحسابات',
+  rtt:'تقدم الدفع', rcp:'آخر الدفعات', sal:'عرض الكل', npy:'لم تسجّل أي دفعات بعد',
+  ppl:'من الزكاة تم دفعها',
+  ayst:'📊 ملخص كل السنوات', aysZ:'إجمالي الزكاة', aysP:'المدفوع', aysR:'المتبقي',
+  noh:'لا يوجد حسابات سابقة.\nابدأ الآن!',
+  yr:'عام', hnis:'نصاب', hng:'ذهب', hns:'فضة',
+  hnt:'الوعاء الزكوي', htt:'إجمالي الأصول', hzt:'الزكاة الواجبة', hni:'النصاب',
+  nz:'لا زكاة', dl:'حذف', dlq:'حذف هذا الحساب نهائيًا؟', dlok:'🗑️ تم الحذف',
+  ays:'ملخص كل السنوات', pt:'إجمالي', pp:'مدفوع', pr:'متبقي',
+  nzy:'لا توجد زكاة لهذا العام', plt:'قائمة الدفعات',
+  npa:'لا توجد دفعات.\nاضغط + لإضافة دفعة',
+  swipe_hint:'↔ مرّر للحذف',
+  mtt:'إضافة دفعة زكاة 🤲', mlw:'الجهة المستفيدة', mla:'المبلغ', mly:'ربط بسنة',
+  mld:'التاريخ', mln:'ملاحظة (اختياري)',
+  mbs:'حفظ الدفعة', mbc:'إلغاء',
+  ew:'أدخل اسم المستفيد', ea:'أدخل مبلغًا صحيحًا',
+  ps:'✅ تم حفظ الدفعة — جزاك الله خيرًا', dpq:'حذف هذه الدفعة؟',
+  mys:'إحصائياتي', cld:'حسابات', tpl:'إجمالي المدفوع',
+  ai:'معلومات الحساب', aiu:'اسم المستخدم', ain:'الاسم الكامل', aie:'البريد الإلكتروني',
+  abt:'عن التطبيق', apn:'تطبيق زكاة المال', ver:'الإصدار 3.0', fqh:'المذهب الفقهي', gen:'عام',
+  lgb:'🚪 تسجيل الخروج', lgq:'هل تريد تسجيل الخروج؟', snc:'عضو منذ',
+  enc_exp_t:'🔐 تصدير مشفّر', enc_imp_t:'🔐 فك التشفير',
+  enc_pw_exp:'كلمة المرور للتشفير', enc_pw_imp:'كلمة المرور للفك',
+  enc_hint_exp:'ستُشفّر بياناتك بهذه الكلمة. <strong>احتفظ بها</strong> — ستحتاجها عند الاستعادة.',
+  enc_hint_imp:'أدخل نفس كلمة المرور التي استخدمتها عند التصدير.',
+  enc_short:'كلمة المرور: 4 أحرف على الأقل',
+  enc_ok:'🔐 تم التصدير المشفّر بنجاح', enc_err:'فشل التشفير',
+  enc_wrong:'❌ كلمة المرور خاطئة أو الملف تالف',
+  inst_t:'تثبيت التطبيق', inst_s:'أضفه لشاشة الرئيسية للوصول السريع',
+  inst_chrome:'فتح القائمة ⋮ ثم "إضافة إلى الشاشة الرئيسية"',
+  inst_safari:'اضغط زر المشاركة 🔗 ثم "إضافة إلى الشاشة الرئيسية"',
+  nmod_t:'📖 مرجع قيم النصاب', nmod_s:'القيم التقريبية لعام 2025 — تتغير يومياً',
+  nmod_gh:'ذهب 85جم', nmod_sh:'فضة 595جم',
+  nmod_note:'⚠️ <strong>تنبيه:</strong> هذه قيم تقريبية للمرجعية فقط. استخدم السعر اليومي الفعلي لدقة أكبر.',
+  a1:'النقدية', a2:'التوفير', a3:'الجاري', a4:'مستحقات', a5:'الذهب',
+  a6:'الفضة', a7:'أسهم/صناديق', a8:'عملات رقمية', a9:'استثمارات', a10:'مخزون',
+  cph:'🌙 حساب زكاة المال', cpy:'السنة', cpd:'الديون',
+  cpn:'الوعاء الزكوي', cps:'النصاب', cpz:'الزكاة الواجبة', cpnz:'لا زكاة واجبة',
+  cpf:'تم الحساب بتطبيق زكاة المال', cpok:'✅ تم النسخ',
+  mwph:'مثال: جمعية خيرية',
+  impok:'✅ تم استيراد البيانات بنجاح', imperr:'خطأ في الملف',
+  mrem_d:'الزكاة الواجبة', mrem_p:'المدفوع', mrem_r:'المتبقي', mrem_none:'لا زكاة لهذا العام',
+  exp_t:'📤 تصدير نسخة احتياطية', exp_enc:'🔐 مشفّر (.zak)', exp_enc_s:'محمي بكلمة مرور',
+  exp_plain:'📄 عادي (.json)', exp_plain_s:'بدون تشفير',
+  bkp:'النسخ الاحتياطي', bkp_sect:'النسخ التلقائي',
+  bkp_local:'📍 محلي', bkp_drive:'☁️ جوجل درايف',
+  bkp_every:'التكرار', bkp_daily:'يومياً', bkp_weekly:'أسبوعياً', bkp_monthly:'شهرياً',
+  bkp_last:'آخر نسخة', bkp_never:'لم يتم بعد', bkp_dl:'⬇️ تحميل آخر نسخة',
+  bkp_cid:'معرّف OAuth', bkp_connect:'🔗 ربط جوجل',
+  bkp_connected:'✅ متصل بجوجل درايف', bkp_disconnect:'قطع الاتصال',
+  bkp_now:'💾 نسخ الآن', bkp_restore_dr:'⬆️ استعادة',
+  bkp_ok_local:'✅ تم الحفظ التلقائي محلياً', bkp_ok_drive:'☁️ تم النسخ على جوجل درايف',
+  bkp_err_drive:'فشل النسخ على درايف', bkp_tok_exp:'انتهت جلسة جوجل — أعد الاتصال',
+  bkp_list_t:'اختر نسخة للاستعادة', bkp_list_empty:'لا يوجد نسخ في درايف',
+  bkp_loading:'جارٍ التحميل...', bkp_cid_ph:'أدخل Client ID من جوجل',
+  bkp_setup_hint:'أنشئ OAuth Client ID من Google Cloud Console ← APIs → Credentials',
+  exp_imp:'📥 استيراد', imp_s:'يدعم .zak المشفر و .json',
+  exp:'تصدير', exps:'بصيغة .zak أو .json',
+  imp:'استيراد', imps:'يدعم .zak و .json',
+  inst_btn:'تثبيت الآن',
+  share_bkp:'📤 مشاركة النسخ الاحتياطي', share_bkp_s:'أرسل للدرايف أو إيميل أو أي تطبيق',
+  share_dl:'⬇️ تحميل الملف', share_ok:'✅ تمت المشاركة',
+  bkp_cloud:'☁️ النسخ السحابي', bkp_cloud_s:'شارك النسخة مع أي خدمة سحابية',
+  inst_already:'✅ التطبيق مثبّت بالفعل على هذا الجهاز',
+  inst_open:'افتح الملف في متصفح كروم (أندرويد) أو سفاري (iOS)',
+  inst_android:'أندرويد — كروم: القائمة ⋮ ← "إضافة للشاشة الرئيسية"',
+  inst_ios_step:'iOS — سفاري: زر المشاركة ← "إضافة للشاشة الرئيسية"',
+  inst_tip:'💡 يُفضَّل فتح الملف من رابط بدلاً من تحميله مباشرة لتفعيل زر التثبيت'
+},
+en:{
+  app:'Zakah al-Mal', sub:'Smart Zakah Calculator',
+  tin:'Sign In', tup:'Register',
+  lu:'Username', lp:'Password', ln:'Full Name', le:'Email (optional)',
+  bin:'Sign In →', bup:'Create Account →',
+  e1:'Please fill all required fields', e2:'Username: at least 3 characters',
+  e3:'Password: at least 6 characters', e4:'Username already taken',
+  e5:'Username not found', e6:'Incorrect password',
+  nd:'Home', nh:'History', np:'Payments', npr:'Profile',
+  tbd:'Dashboard', tbh:'History', tbp:'Payments', tbpr:'My Account',
+  tbc:'Zakah Calculation', tbr:'Result', ncb:'+ New',
+  st:'Step', of:'of',
+  wt1:'Currency & Nisab', wt2:'Cash & Savings', wt3:'Gold & Investments', wt4:'Debts',
+  c1:'Currency', c1d:'Choose your calculation currency',
+  c2:'Nisab Standard', c2d:'Nisab is the minimum wealth threshold for Zakah.',
+  gs:'⚱️ Gold (85g)', ss:'🥈 Silver (595g)',
+  c3:'Nisab Value', c3gd:'Enter value of 85g of gold in your currency', c3sd:'Enter value of 595g of silver in your currency',
+  ntip:'<strong>Tip:</strong> Search "85 grams gold price [currency]" for today\'s value.',
+  nhlp:'📖 Nisab Reference',
+  c4:'Year', c4d:'Gregorian year for this calculation',
+  ct1:'💵 Cash at Home', ct1d:'Physical cash at home or wallet',
+  ct2:'🏦 Bank Accounts', ct2d:'Balances across all your bank accounts', cl2:'Savings Account', cl3:'Checking Account',
+  ct3:'💳 Receivables', ct3d:'Money owed to you that you expect to receive',
+  ct4:'⚱️ Gold & Silver', ct4d:'Enter current market value.', cl5:'Gold Value', cl6:'Silver Value',
+  ct5:'📈 Investments', ct5d:'Market value of stocks, funds, and crypto',
+  cl7:'Stocks / Funds', cl8:'Cryptocurrency', cl9:'Other Investments',
+  ct6:'🏪 Business Assets', ct6d:'Value of merchandise/inventory',
+  ct7:'📉 Deductible Debts', ct7d:'Debts due within the year can be deducted.',
+  cl11:'Short-term Debts', cl12:'Bills Due Now',
+  dn:'<strong>Note:</strong> Personal expenses are generally not deducted.',
+  nx:'Next →', bk:'← Back', cb:'✦ Calculate Zakah', en:'Please enter the Nisab value',
+  edt:'Edit', edtbanner:'Edit mode — this will update the existing calculation', edtok:'✅ Calculation updated',
+  rdul:'Your Zakah This Year', rnd:'No Zakah Due',
+  rdm:'Your net wealth exceeds the Nisab. May Allah accept it. 🤲',
+  rndm:'Your net wealth is below the Nisab threshold.',
+  smh:'📊 Breakdown', zr:'Zakah @ 2.5%',
+  st1:'Total Assets', st2:'Deductible Debts', st3:'Net Zakatable Wealth',
+  st4:'Nisab', st5:'Zakah Due', ng_:'Gold', ns_:'Silver',
+  btr:'💳 Track Payments', bcp:'📋 Copy Summary', bnc:'🧮 New Calculation', bhm:'→ Dashboard',
+  gm:'Good morning,', ga:'Good afternoon,', ge:'Good evening,',
+  hij:'1446 AH', vrs:'Establish prayer and give Zakah.',
+  noc:'No calculations yet. Start now!',
+  tz:'Total Zakah', pd:'Paid', rm:'Remaining', cn:'Calculate Now', cl:'Calculations',
+  rtt:'Payment Progress', rcp:'Recent Payments', sal:'See All', npy:'No payments recorded yet.',
+  ppl:'of Zakah paid',
+  ayst:'📊 All Years Summary', aysZ:'Total Zakah', aysP:'Paid', aysR:'Remaining',
+  noh:'No calculations yet.\nStart now!',
+  yr:'Year', hnis:'Nisab', hng:'Gold', hns:'Silver',
+  hnt:'Net Wealth', htt:'Total Assets', hzt:'Zakah Due', hni:'Nisab',
+  nz:'No Zakah', dl:'Delete', dlq:'Delete this calculation permanently?', dlok:'🗑️ Deleted',
+  ays:'All Years Summary', pt:'Total', pp:'Paid', pr:'Remaining',
+  nzy:'No Zakah for this year', plt:'Payment History',
+  npa:'No payments yet.\nSwipe to delete, tap + to add',
+  swipe_hint:'← Swipe to delete',
+  mtt:'Add Zakah Payment 🤲', mlw:'Recipient', mla:'Amount', mly:'Link to Year',
+  mld:'Date', mln:'Note (optional)',
+  mbs:'Save Payment', mbc:'Cancel',
+  ew:'Enter the recipient name', ea:'Enter a valid amount',
+  ps:'✅ Payment saved — JazakAllah Khair', dpq:'Delete this payment?',
+  mys:'My Stats', cld:'Calculations', tpl:'Total Paid',
+  ai:'Account Info', aiu:'Username', ain:'Full Name', aie:'Email',
+  abt:'About', apn:'Zakah al-Mal App', ver:'Version 3.0', fqh:'Fiqh School', gen:'General',
+  lgb:'🚪 Sign Out', lgq:'Sign out of your account?', snc:'Member since',
+  enc_exp_t:'🔐 Encrypted Export', enc_imp_t:'🔐 Decrypt File',
+  enc_pw_exp:'Encryption password', enc_pw_imp:'Decryption password',
+  enc_hint_exp:'Your data will be encrypted with this password. <strong>Save it</strong> — you\'ll need it to restore.',
+  enc_hint_imp:'Enter the same password you used when exporting.',
+  enc_short:'Password: at least 4 characters',
+  enc_ok:'🔐 Encrypted backup exported', enc_err:'Encryption failed',
+  enc_wrong:'❌ Wrong password or corrupted file',
+  inst_t:'Install App', inst_s:'Add to home screen for quick access',
+  inst_chrome:'Open menu ⋮ then tap "Add to Home Screen"',
+  inst_safari:'Tap the share button 🔗 then "Add to Home Screen"',
+  nmod_t:'📖 Nisab Reference Values', nmod_s:'Approximate 2025 values — change daily',
+  nmod_gh:'Gold 85g', nmod_sh:'Silver 595g',
+  nmod_note:'⚠️ <strong>Note:</strong> These are approximate reference values only. Use the actual daily price for accuracy.',
+  a1:'Cash', a2:'Savings', a3:'Checking', a4:'Receivables', a5:'Gold',
+  a6:'Silver', a7:'Stocks/Funds', a8:'Crypto', a9:'Other Inv.', a10:'Inventory',
+  cph:'🌙 Zakah al-Mal Calculation', cpy:'Year', cpd:'Debts',
+  cpn:'Net Wealth', cps:'Nisab', cpz:'Zakah Due', cpnz:'No Zakah Due',
+  cpf:'Calculated with Zakah al-Mal app', cpok:'✅ Copied',
+  mwph:'e.g. Islamic Relief, local mosque',
+  impok:'✅ Data imported successfully', imperr:'Invalid file',
+  mrem_d:'Zakah due', mrem_p:'Paid', mrem_r:'Remaining', mrem_none:'No Zakah for this year',
+  exp_t:'📤 Export Backup', exp_enc:'🔐 Encrypted (.zak)', exp_enc_s:'Password protected',
+  exp_plain:'📄 Plain (.json)', exp_plain_s:'No encryption',
+  bkp:'Backup', bkp_sect:'Auto Backup',
+  bkp_local:'📍 Local', bkp_drive:'☁️ Google Drive',
+  bkp_every:'Every', bkp_daily:'Daily', bkp_weekly:'Weekly', bkp_monthly:'Monthly',
+  bkp_last:'Last backup', bkp_never:'Never', bkp_dl:'⬇️ Download Last Backup',
+  bkp_cid:'OAuth Client ID', bkp_connect:'🔗 Connect Google',
+  bkp_connected:'✅ Connected to Google Drive', bkp_disconnect:'Disconnect',
+  bkp_now:'💾 Backup Now', bkp_restore_dr:'⬆️ Restore',
+  bkp_ok_local:'✅ Auto-backup saved locally', bkp_ok_drive:'☁️ Backed up to Google Drive',
+  bkp_err_drive:'Drive backup failed', bkp_tok_exp:'Google session expired — reconnect',
+  bkp_list_t:'Choose a backup to restore', bkp_list_empty:'No backups found in Drive',
+  bkp_loading:'Loading...', bkp_cid_ph:'Paste your Google Client ID',
+  bkp_setup_hint:'Create an OAuth Client ID in Google Cloud Console → APIs → Credentials',
+  exp_imp:'📥 Import', imp_s:'Supports encrypted .zak and .json',
+  exp:'Export', exps:'.zak or .json format',
+  imp:'Import', imps:'Supports .zak & .json',
+  inst_btn:'Install Now',
+  share_bkp:'📤 Share Backup', share_bkp_s:'Send to Drive, email, or any app',
+  share_dl:'⬇️ Download File', share_ok:'✅ Shared successfully',
+  bkp_cloud:'☁️ Cloud Backup', bkp_cloud_s:'Share backup to any cloud service',
+  inst_already:'✅ App is already installed on this device',
+  inst_open:'Open this file in Chrome (Android) or Safari (iOS)',
+  inst_android:'Android — Chrome: Menu ⋮ → "Add to Home Screen"',
+  inst_ios_step:'iOS — Safari: Share button → "Add to Home Screen"',
+  inst_tip:'💡 Opening via a URL (not downloaded file) enables the native Install button'
+}};
+
+function t(k){ return (I[L]&&I[L][k]) || (I.ar&&I.ar[k]) || k; }
+
+var CR  = {EGP:'EGP',USD:'$',SAR:'ر.س',AED:'د.إ',GBP:'£',EUR:'€',PKR:'₨',MYR:'RM',TRY:'₺',MAD:'د.م'};
+var CRA = {EGP:'جنيه مصري',USD:'دولار أمريكي',SAR:'ريال سعودي',AED:'درهم إماراتي',GBP:'جنيه إسترليني',EUR:'يورو',PKR:'روبية',MYR:'رينغيت',TRY:'ليرة',MAD:'درهم مغربي'};
+var CRE = {EGP:'Egyptian Pound',USD:'US Dollar',SAR:'Saudi Riyal',AED:'UAE Dirham',GBP:'British Pound',EUR:'Euro',PKR:'Pakistani Rupee',MYR:'Malaysian Ringgit',TRY:'Turkish Lira',MAD:'Moroccan Dirham'};
+var NISAB_REF = {EGP:{g:305000,s:7500},USD:{g:7800,s:600},SAR:{g:29200,s:2250},AED:{g:28600,s:2200},GBP:{g:6100,s:470},EUR:{g:7200,s:555},PKR:{g:2180000,s:168000},MYR:{g:34500,s:2650},TRY:{g:260000,s:20000},MAD:{g:78000,s:6000}};
+
+/* ════════════════════════════════════════
+   LANGUAGE
+════════════════════════════════════════ */
+function applyLang(){
+  var R=document.getElementById('HR'); R.lang=L; R.dir=L==='ar'?'rtl':'ltr';
+  var s=function(id,v){var e=document.getElementById(id);if(e)e.textContent=v;};
+  var p=function(id,v){var e=document.getElementById(id);if(e)e.placeholder=v;};
+  s('ah1',t('app')); s('ap',t('sub'));
+  s('at-in',t('tin')); s('at-up',t('tup'));
+  s('ll-u',t('lu')); s('ll-p',t('lp')); s('ll-n',t('ln')); s('ll-u2',t('lu')); s('ll-e',t('le')); s('ll-p2',t('lp'));
+  s('btn-in',t('bin')); s('btn-up',t('bup'));
+  p('lu',t('lu')); p('lp',t('lp')); p('rn',t('ln')); p('ru',t('lu')); p('rp',t('lp'));
+  s('tbt-d',t('tbd')); s('tbt-h',t('tbh')); s('tbt-p',t('tbp')); s('tbt-pr',t('tbpr'));
+  s('tbt-c',t('tbc')); s('tbt-r',t('tbr')); s('ncb',t('ncb'));
+  s('nl-d',t('nd')); s('nl-h',t('nh')); s('nl-p',t('np')); s('nl-pr',t('npr'));
+  s('mod-t',t('mtt')); s('ml-w',t('mlw')); s('ml-a',t('mla'));
+  s('ml-y',t('mly')); s('ml-d',t('mld')); s('ml-n',t('mln'));
+  s('msave',t('mbs')); s('mcancel',t('mbc'));
+  p('mw', t('mwph'));
+  s('expmod-t',t('exp_t')); s('expmod-enc-t',t('exp_enc')); s('expmod-enc-s',t('exp_enc_s'));
+  s('expmod-plain-t',t('exp_plain')); s('expmod-plain-s',t('exp_plain_s'));
+  var arr=L==='ar'?'←':'→';
+  var ea1=document.getElementById('expmod-arr1');if(ea1)ea1.textContent=arr;
+  var ea2=document.getElementById('expmod-arr2');if(ea2)ea2.textContent=arr;
+  s('drmod-t',t('bkp_list_t'));
+  s('nmod-t',t('nmod_t')); s('nmod-s',t('nmod_s'));
+  var g=document.getElementById('nh-gh'); if(g) g.textContent=t('nmod_gh');
+  var sh=document.getElementById('nh-sh'); if(sh) sh.textContent=t('nmod_sh');
+  var nn=document.getElementById('nmod-note'); if(nn) nn.innerHTML=t('nmod_note');
+  var lb=L==='ar'?'EN':'عر';
+  document.querySelectorAll('.lbtn').forEach(function(b){b.textContent=lb;});
+}
+function toggleLang(){
+  L=L==='ar'?'en':'ar'; localStorage.setItem('zl',L); applyLang(); rerenderActive();
+}
+function rerenderActive(){
+  var s=document.querySelector('#main .scr.on');
+  if(!s) return;
+  var id=s.id;
+  if(id==='s-dash')renderDash();
+  else if(id==='s-hist')renderHist();
+  else if(id==='s-pay')renderPay();
+  else if(id==='s-prof')renderProf();
+  else if(id==='s-calc')renderCalc();
+}
+
+/* ════════════════════════════════════════
+   STORAGE
+════════════════════════════════════════ */
+function hp(s){var h=0;for(var i=0;i<s.length;i++)h=Math.imul(31,h)+s.charCodeAt(i)|0;return h.toString(36)+'_'+s.length;}
+function uid(){return '_'+Math.random().toString(36).slice(2,9)+Date.now().toString(36);}
+function today(){return new Date().toISOString().slice(0,10);}
+function fmt(n){return Math.abs(n||0).toLocaleString('en-US',{maximumFractionDigits:0});}
+function fmtA(n,s){return fmt(n)+' '+s;}
+function getUs(){return JSON.parse(localStorage.getItem('zu')||'{}');}
+function saveUs(u){localStorage.setItem('zu',JSON.stringify(u));}
+function getCur(){return localStorage.getItem('zc')||null;}
+function setCur(u){localStorage.setItem('zc',u);}
+function getDat(u){return JSON.parse(localStorage.getItem('zd_'+u)||'{"calculations":[],"payments":[]}');}
+function saveDat(u,d){localStorage.setItem('zd_'+u,JSON.stringify(d));}
+function curDat(){return getDat(getCur());}
+function saveCur(d){saveDat(getCur(),d); _schedAutoBackup();}
+
+/* Sort calcs by year descending */
+function sortCalcs(calcs){
+  return calcs.slice().sort(function(a,b){return b.year - a.year;});
+}
+
+function toast(m,dur){
+  dur=dur||2600;
+  var e=document.getElementById('toast');
+  e.textContent=m; e.classList.add('on');
+  clearTimeout(e._t);
+  e._t=setTimeout(function(){e.classList.remove('on');},dur);
+}
+
+/* ════════════════════════════════════════
+   AUTH
+════════════════════════════════════════ */
+var _am='in';
+function showForm(m){
+  _am=m;
+  document.getElementById('at-in').classList.toggle('on',m==='in');
+  document.getElementById('at-up').classList.toggle('on',m==='up');
+  document.getElementById('f-in').classList.toggle('hidden',m!=='in');
+  document.getElementById('f-up').classList.toggle('hidden',m!=='up');
+  document.getElementById('aerr').style.display='none';
+}
+function showErr(m){var e=document.getElementById('aerr');e.textContent=m;e.style.display='block';}
+function doLogin(){
+  var u=document.getElementById('lu').value.trim().toLowerCase();
+  var p=document.getElementById('lp').value;
+  if(!u||!p){showErr(t('e1'));return;}
+  var us=getUs();
+  if(!us[u]){showErr(t('e5'));return;}
+  if(us[u].ph!==hp(p)){showErr(t('e6'));return;}
+  setCur(u); launch();
+}
+function doRegister(){
+  var n=document.getElementById('rn').value.trim();
+  var u=document.getElementById('ru').value.trim().toLowerCase();
+  var e=document.getElementById('re').value.trim();
+  var p=document.getElementById('rp').value;
+  if(!n||!u||!p){showErr(t('e1'));return;}
+  if(u.length<3){showErr(t('e2'));return;}
+  if(p.length<6){showErr(t('e3'));return;}
+  var us=getUs();
+  if(us[u]){showErr(t('e4'));return;}
+  us[u]={name:n,email:e,ph:hp(p),since:today()};
+  saveUs(us); setCur(u); launch();
+}
+function doLogout(){
+  if(!confirm(t('lgq'))) return;
+  localStorage.removeItem('zc');
+  _dashCid=null; _payTab=null;
+  document.getElementById('main').classList.remove('on');
+  document.getElementById('sa').classList.add('on');
+  showForm('in');
+  document.getElementById('lu').value='';
+  document.getElementById('lp').value='';
+  document.getElementById('aerr').style.display='none';
+  applyLang();
+}
+function launch(){
+  document.getElementById('sa').classList.remove('on');
+  document.getElementById('main').classList.add('on');
+  document.querySelectorAll('#main .scr').forEach(function(s){s.classList.remove('on');});
+  document.getElementById('s-dash').classList.add('on');
+  document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('on');});
+  document.getElementById('n-dash').classList.add('on');
+  _dashCid=null; _payTab=null;
+  applyLang(); renderDash();
+}
+window.addEventListener('DOMContentLoaded',function(){
+  L=localStorage.getItem('zl')||'ar'; applyLang();
+  var u=getCur(); if(u&&getUs()[u]) launch();
+});
+document.addEventListener('keydown',function(e){
+  if(e.key==='Enter'&&document.getElementById('sa').classList.contains('on'))
+    _am==='in'?doLogin():doRegister();
+});
+
+/* ════════════════════════════════════════
+   NAVIGATION
+════════════════════════════════════════ */
+function showScr(id){
+  var prev=document.querySelector('#main .scr.on');
+  if(prev&&prev.id!==id) prev.classList.remove('on');
+  var next=document.getElementById(id);
+  next.classList.remove('on');
+  void next.offsetWidth;
+  next.classList.add('on');
+}
+function goNav(tab){
+  document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('on');});
+  document.getElementById('n-'+tab).classList.add('on');
+  showScr('s-'+tab);
+  if(tab==='dash')renderDash();
+  else if(tab==='hist')renderHist();
+  else if(tab==='pay')renderPay();
+  else if(tab==='prof')renderProf();
+}
+function goHome(){goNav('dash');}
+
+/* ════════════════════════════════════════
+   DASHBOARD — with All-Years Summary
+════════════════════════════════════════ */
+var _dashCid=null;
+
+function renderDash(){
+  var uname=getCur(), user=getUs()[uname];
+  var data=curDat();
+  var calcs=sortCalcs(data.calculations); // sorted year desc
+  var pays=data.payments;
+  var hr=new Date().getHours();
+  var greet=hr<12?t('gm'):hr<17?t('ga'):t('ge');
+
+  var h='<div class="hero">'
+    +'<div class="hbdg">'+t('hij')+'</div>'
+    +'<div class="hg">'+greet+'</div>'
+    +'<div class="hn amiri cg">'+user.name+'</div>'
+    +'<div class="hv">'+t('vrs')+'</div></div>';
+
+  if(!calcs.length){
+    h+='<div class="sg">'
+      +'<div class="sc acc w" onclick="startCalc()"><div class="si">🧮</div><div class="slb">'+t('cn')+'</div><div class="sv vg">'+t('noc')+'</div></div>'
+      +'</div>';
+  } else {
+    // ── All-Years Summary card (show if 1+ calcs) ──
+    var allZ=calcs.filter(function(c){return c.zakahDue;}).reduce(function(s,c){return s+c.zakahAmount;},0);
+    var allP=pays.reduce(function(s,p){return s+p.amount;},0);
+    var allR=Math.max(0,allZ-allP);
+    var allPct=allZ>0?Math.min(100,Math.round(allP/allZ*100)):0;
+    var defSym=CR[calcs[0].currency]||calcs[0].currency;
+    h+='<div class="ays-card">'
+      +'<div class="ays-title">'+t('ayst')+' <span style="font-size:.65rem;color:var(--mu);font-weight:400">('+calcs.length+' '+t('cl')+')</span></div>'
+      +'<div class="ays-grid">'
+      +'<div class="ays-cell"><div class="ays-v tg">'+fmt(allZ)+'</div><div class="ays-l">'+t('aysZ')+' '+defSym+'</div></div>'
+      +'<div class="ays-cell"><div class="ays-v tgr">'+fmt(allP)+'</div><div class="ays-l">'+t('aysP')+'</div></div>'
+      +'<div class="ays-cell"><div class="ays-v '+(allR>0?'tr':'tgr')+'">'+fmt(allR)+'</div><div class="ays-l">'+t('aysR')+'</div></div>'
+      +'</div>'
+      +'<div class="ays-bar"><div class="ays-fill'+(allPct>=100?' done':'')+'" style="width:'+allPct+'%"></div></div>'
+      +'<div class="ays-pct">'+allPct+'% '+t('ppl')+'</div>'
+      +'</div>';
+
+    // ── Year tabs ──
+    if(!calcs.find(function(c){return c.id===_dashCid;})) _dashCid=calcs[0].id;
+    h+='<div class="ytw"><div class="yts" id="dyt">';
+    calcs.forEach(function(c){h+='<button class="ytb'+(c.id===_dashCid?' on':'')+'" data-id="'+c.id+'">'+t('yr')+' '+c.year+'</button>';});
+    h+='</div></div>';
+
+    var sel=calcs.find(function(c){return c.id===_dashCid;});
+    var sym=CR[sel.currency]||sel.currency;
+    var sp=pays.filter(function(p){return p.calcId===sel.id;});
+    var tz=sel.zakahDue?sel.zakahAmount:0;
+    var tp=sp.reduce(function(s,p){return s+p.amount;},0);
+    var rm=Math.max(0,tz-tp);
+    var pct=tz>0?Math.min(100,Math.round(tp/tz*100)):0;
+
+    h+='<div class="sg">'
+      +'<div class="sc acc" onclick="startCalc()"><div class="si">🧮</div><div class="slb">'+t('cn')+'</div><div class="sv vg">→</div></div>'
+      +'<div class="sc" onclick="goNav(\'hist\')"><div class="si">📋</div><div class="slb">'+t('cl')+'</div><div class="sv">'+calcs.length+'</div></div>'
+      +'<div class="sc w" onclick="goNav(\'pay\')"><div class="si">💰</div><div class="slb">'+t('tz')+' — '+t('yr')+' '+sel.year+'</div><div class="sv vg">'+(sel.zakahDue?fmtA(tz,sym):t('nz'))+'</div></div>'
+      +'<div class="sc" onclick="goNav(\'pay\')"><div class="si">✅</div><div class="slb">'+t('pd')+'</div><div class="sv vgr">'+fmt(tp)+' '+sym+'</div></div>'
+      +'<div class="sc" onclick="goNav(\'pay\')"><div class="si">⏳</div><div class="slb">'+t('rm')+'</div><div class="sv '+(rm>0?'vr':'vgr')+'">'+fmt(rm)+' '+sym+'</div></div>'
+      +'</div>';
+
+    if(sel.zakahDue){
+      var C=2*Math.PI*42, O=C*(1-pct/100);
+      h+='<div class="rsec"><div class="rt">💳 '+t('rtt')+' — '+t('yr')+' '+sel.year+'</div>'
+        +'<div class="rfx"><div class="rw"><svg class="rsvg" width="90" height="90" viewBox="0 0 90 90">'
+        +'<circle class="rbg" cx="45" cy="45" r="42"/>'
+        +'<circle class="rfill" cx="45" cy="45" r="42" stroke-dasharray="'+C.toFixed(1)+'" stroke-dashoffset="'+O.toFixed(1)+'"/>'
+        +'</svg><div class="rct"><div class="rp">'+pct+'%</div><div class="rsb">'+t('pd')+'</div></div></div>'
+        +'<div class="ri">'
+        +'<div class="rir"><div class="ril">'+t('tz')+'</div><div class="riv tg">'+fmtA(tz,sym)+'</div></div>'
+        +'<div class="rir"><div class="ril">'+t('pd')+'</div><div class="riv tgr">'+fmtA(tp,sym)+'</div></div>'
+        +'<div class="rir"><div class="ril">'+t('rm')+'</div><div class="riv '+(rm>0?'tr':'tgr')+'">'+fmtA(rm,sym)+'</div></div>'
+        +'</div></div></div>';
+    }
+  }
+
+  var rp=pays.slice().reverse().slice(0,4);
+  h+='<div class="shdr"><div class="sht">'+t('rcp')+'</div><button class="shl" onclick="goNav(\'pay\')">'+t('sal')+'</button></div>';
+  if(!rp.length){h+='<div class="ebx"><div class="ei">🤲</div><div class="et">'+t('npy')+'</div></div>';}
+  else{rp.forEach(function(p){var pc=calcs.find(function(c){return c.id===p.calcId;});var ps=pc?CR[pc.currency]||pc.currency:'';h+='<div class="pit"><div class="pit-o">🕌</div><div class="pit-d"><div class="pit-w">'+(p.recipient||'—')+'</div><div class="pit-wh">'+(p.date||'')+(p.note?' · '+p.note:'')+'</div></div><div class="pit-a">'+fmt(p.amount)+' '+ps+'</div></div>';});}
+
+  document.getElementById('dc').innerHTML=h;
+  var yt=document.getElementById('dyt');
+  if(yt){yt.onclick=function(e){var b=e.target.closest('[data-id]');if(b){_dashCid=b.getAttribute('data-id');renderDash();}};}
+}
+
+/* ════════════════════════════════════════
+   WIZARD — new & edit
+════════════════════════════════════════ */
+var W={};
+function startCalc(){
+  W={step:1,std:'gold',cur:'EGP',year:new Date().getFullYear(),editId:null};
+  document.getElementById('tbt-c').textContent=t('tbc');
+  showScr('s-calc'); renderCalc();
+}
+function editCalc(id){
+  var data=curDat();
+  var c=data.calculations.find(function(x){return x.id===id;});
+  if(!c) return;
+  var a=c.assets, ak=Object.keys(a);
+  W={step:1,editId:id,std:c.std,cur:c.currency,year:c.year,nisab:c.nisab,
+    ca:a[ak[0]]||0,sv:a[ak[1]]||0,ck:a[ak[2]]||0,rv:a[ak[3]]||0,
+    go:a[ak[4]]||0,si:a[ak[5]]||0,st:a[ak[6]]||0,cr:a[ak[7]]||0,
+    ot:a[ak[8]]||0,inv:a[ak[9]]||0,db:c.debts||0,bl:0};
+  document.getElementById('tbt-c').textContent=t('edt');
+  showScr('s-calc'); renderCalc();
+}
+function renderCalc(){
+  var s=W, sym=CR[s.cur]||s.cur;
+  var TT=[t('wt1'),t('wt2'),t('wt3'),t('wt4')];
+  var ds=[1,2,3,4].map(function(i){return '<div class="dot'+(i<s.step?' dn':i===s.step?' ac':'')+'"></div>';}).join('');
+  var cn=L==='ar'?CRA:CRE;
+  var h=(s.editId?'<div class="edit-banner">'+t('edtbanner')+'</div>':'')
+    +'<div class="whdr"><div class="wtop">'
+    +'<div><div class="wnum">'+t('st')+' '+s.step+' '+t('of')+' 4</div>'
+    +'<div class="wtit amiri cg">'+TT[s.step-1]+'</div></div>'
+    +'<div class="dots" style="margin-top:7px">'+ds+'</div></div></div>'
+    +'<div class="wb">';
+  if(s.step===1){
+    var opts=Object.entries(cn).map(function(e){return '<option value="'+e[0]+'"'+(e[0]===s.cur?' selected':'')+'>'+e[0]+' — '+e[1]+'</option>';}).join('');
+    h+='<div class="card"><div class="ct">🌍 '+t('c1')+'</div><div class="cd">'+t('c1d')+'</div>'
+      +'<select class="sel" id="wc">'+opts+'</select></div>'
+      +'<div class="card"><div class="ct">⚖️ '+t('c2')+'</div><div class="cd">'+t('c2d')+'</div>'
+      +'<div class="tbns"><button class="tbn'+(s.std==='gold'?' on':'')+'" id="tbg" onclick="setN(\'gold\')">'+t('gs')+'</button>'
+      +'<button class="tbn'+(s.std==='silver'?' on':'')+'" id="tbs" onclick="setN(\'silver\')">'+t('ss')+'</button></div></div>'
+      +'<div class="card"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">'
+      +'<div class="ct" style="margin-bottom:0">💎 '+t('c3')+'</div>'
+      +'<button class="nh-btn" onclick="showNisabHelp()">'+t('nhlp')+'</button></div>'
+      +'<div class="cd" id="ndc" style="clear:both">'+(s.std==='gold'?t('c3gd'):t('c3sd'))+'</div>'
+      +'<div class="fw"><span class="fp">'+sym+'</span><input class="fi" type="number" id="wn" value="'+(s.nisab||'')+'" placeholder="0" min="0"/></div>'
+      +'<div class="nbox">'+t('ntip')+'</div></div>'
+      +'<div class="card"><div class="ct">📅 '+t('c4')+'</div><div class="cd">'+t('c4d')+'</div>'
+      +'<div class="fw"><input class="fi" type="number" id="wy" value="'+s.year+'" min="2000" max="2099" style="padding:0 12px"/></div></div>';
+  } else if(s.step===2){
+    h+='<div class="card"><div class="ct">'+t('ct1')+'</div><div class="cd">'+t('ct1d')+'</div><div class="fw"><span class="fp">'+sym+'</span><input class="fi" type="number" id="wca" value="'+(s.ca||'')+'" placeholder="0"/></div></div>'
+      +'<div class="card"><div class="ct">'+t('ct2')+'</div><div class="cd">'+t('ct2d')+'</div>'
+      +'<div class="fgrp"><span class="fl">'+t('cl2')+'</span><div class="fw"><span class="fp">'+sym+'</span><input class="fi" type="number" id="wsv" value="'+(s.sv||'')+'" placeholder="0"/></div></div>'
+      +'<div class="fgrp"><span class="fl">'+t('cl3')+'</span><div class="fw"><span class="fp">'+sym+'</span><input class="fi" type="number" id="wck" value="'+(s.ck||'')+'" placeholder="0"/></div></div></div>'
+      +'<div class="card"><div class="ct">'+t('ct3')+'</div><div class="cd">'+t('ct3d')+'</div><div class="fw"><span class="fp">'+sym+'</span><input class="fi" type="number" id="wrv" value="'+(s.rv||'')+'" placeholder="0"/></div></div>';
+  } else if(s.step===3){
+    h+='<div class="card"><div class="ct">'+t('ct4')+'</div><div class="cd">'+t('ct4d')+'</div>'
+      +'<div class="fgrp"><span class="fl">'+t('cl5')+'</span><div class="fw"><span class="fp">'+sym+'</span><input class="fi" type="number" id="wgo" value="'+(s.go||'')+'" placeholder="0"/></div></div>'
+      +'<div class="fgrp"><span class="fl">'+t('cl6')+'</span><div class="fw"><span class="fp">'+sym+'</span><input class="fi" type="number" id="wsi" value="'+(s.si||'')+'" placeholder="0"/></div></div></div>'
+      +'<div class="card"><div class="ct">'+t('ct5')+'</div><div class="cd">'+t('ct5d')+'</div>'
+      +'<div class="fgrp"><span class="fl">'+t('cl7')+'</span><div class="fw"><span class="fp">'+sym+'</span><input class="fi" type="number" id="wst" value="'+(s.st||'')+'" placeholder="0"/></div></div>'
+      +'<div class="fgrp"><span class="fl">'+t('cl8')+'</span><div class="fw"><span class="fp">'+sym+'</span><input class="fi" type="number" id="wcr" value="'+(s.cr||'')+'" placeholder="0"/></div></div>'
+      +'<div class="fgrp"><span class="fl">'+t('cl9')+'</span><div class="fw"><span class="fp">'+sym+'</span><input class="fi" type="number" id="wot" value="'+(s.ot||'')+'" placeholder="0"/></div></div></div>'
+      +'<div class="card"><div class="ct">'+t('ct6')+'</div><div class="cd">'+t('ct6d')+'</div><div class="fw"><span class="fp">'+sym+'</span><input class="fi" type="number" id="win" value="'+(s.inv||'')+'" placeholder="0"/></div></div>';
+  } else if(s.step===4){
+    h+='<div class="card"><div class="ct">'+t('ct7')+'</div><div class="cd">'+t('ct7d')+'</div>'
+      +'<div class="fgrp"><span class="fl">'+t('cl11')+'</span><div class="fw"><span class="fp">'+sym+'</span><input class="fi" type="number" id="wdb" value="'+(s.db||'')+'" placeholder="0"/></div></div>'
+      +'<div class="fgrp"><span class="fl">'+t('cl12')+'</span><div class="fw"><span class="fp">'+sym+'</span><input class="fi" type="number" id="wbl" value="'+(s.bl||'')+'" placeholder="0"/></div></div>'
+      +'<div class="nbox">'+t('dn')+'</div></div>';
+  }
+  h+='</div><div class="wa">'
+    +(s.step<4?'<button class="btn bgold" onclick="wNext()">'+t('nx')+'</button>'
+               :'<button class="btn bgold" onclick="wDone()">'+t('cb')+'</button>')
+    +(s.step>1?'<button class="btn bol" onclick="wBack()">'+t('bk')+'</button>':'')
+    +'</div>';
+  document.getElementById('cc').innerHTML=h;
+  var wc=document.getElementById('wc');
+  if(wc) wc.addEventListener('change',function(){
+    W.cur=this.value;
+    document.querySelectorAll('#cc .fp').forEach(function(x){x.textContent=wc.value;});
+  });
+}
+function setN(v){
+  W.std=v;
+  var tg=document.getElementById('tbg');if(tg)tg.classList.toggle('on',v==='gold');
+  var ts=document.getElementById('tbs');if(ts)ts.classList.toggle('on',v==='silver');
+  var d=document.getElementById('ndc');if(d)d.textContent=v==='gold'?t('c3gd'):t('c3sd');
+}
+function rW(){
+  var g=function(id){var e=document.getElementById(id);return e?parseFloat(e.value)||0:0;};
+  var s=W;
+  if(s.step===1){var wc=document.getElementById('wc');if(wc)s.cur=wc.value;s.nisab=g('wn');var wy=document.getElementById('wy');s.year=wy?parseInt(wy.value)||new Date().getFullYear():s.year;}
+  if(s.step===2){s.ca=g('wca');s.sv=g('wsv');s.ck=g('wck');s.rv=g('wrv');}
+  if(s.step===3){s.go=g('wgo');s.si=g('wsi');s.st=g('wst');s.cr=g('wcr');s.ot=g('wot');s.inv=g('win');}
+  if(s.step===4){s.db=g('wdb');s.bl=g('wbl');}
+}
+function wNext(){rW();if(W.step===1&&!(W.nisab>0)){toast('⚠️ '+t('en'));return;}W.step++;renderCalc();document.getElementById('s-calc').querySelector('.ca').scrollTop=0;}
+function wBack(){rW();W.step--;renderCalc();document.getElementById('s-calc').querySelector('.ca').scrollTop=0;}
+function wDone(){
+  rW();
+  var s=W, AS={};
+  AS[t('a1')]=s.ca||0;AS[t('a2')]=s.sv||0;AS[t('a3')]=s.ck||0;
+  AS[t('a4')]=s.rv||0;AS[t('a5')]=s.go||0;AS[t('a6')]=s.si||0;
+  AS[t('a7')]=s.st||0;AS[t('a8')]=s.cr||0;AS[t('a9')]=s.ot||0;AS[t('a10')]=s.inv||0;
+  var dbt=(s.db||0)+(s.bl||0);
+  var totA=Object.values(AS).reduce(function(a,b){return a+b;},0);
+  var net=Math.max(0,totA-dbt);
+  var due=net>=s.nisab;
+  var amt=due?net*0.025:0;
+  var data=curDat();
+  if(s.editId){
+    var idx=data.calculations.findIndex(function(c){return c.id===s.editId;});
+    if(idx>-1){
+      var updated={id:s.editId,date:today(),year:s.year,currency:s.cur,sym:CR[s.cur]||s.cur,nisab:s.nisab,std:s.std,assets:AS,debts:dbt,totalAssets:totA,netWealth:net,zakahDue:due,zakahAmount:amt};
+      data.calculations[idx]=updated; saveCur(data);
+      _dashCid=s.editId; _payTab=s.editId;
+      renderResult(updated); showScr('s-res'); toast(t('edtok')); return;
+    }
+  }
+  var calc={id:uid(),date:today(),year:s.year,currency:s.cur,sym:CR[s.cur]||s.cur,nisab:s.nisab,std:s.std,assets:AS,debts:dbt,totalAssets:totA,netWealth:net,zakahDue:due,zakahAmount:amt};
+  data.calculations.push(calc); saveCur(data);
+  _dashCid=calc.id; _payTab=calc.id;
+  renderResult(calc); showScr('s-res');
+}
+
+/* ════════════════════════════════════════
+   NISAB HELPER
+════════════════════════════════════════ */
+function showNisabHelp(){
+  var body='';
+  Object.entries(NISAB_REF).forEach(function(e){
+    var cur=e[0],v=e[1];
+    body+='<div class="nh-row"><div class="nh-cur">'+cur+'</div><div class="nh-g">'+fmt(v.g)+'</div><div class="nh-s">'+fmt(v.s)+'</div></div>';
+  });
+  document.getElementById('nmod-body').innerHTML=body;
+  document.getElementById('nmod').classList.add('on');
+}
+function closeNmod(){document.getElementById('nmod').classList.remove('on');}
+document.getElementById('nmod').addEventListener('click',function(e){if(e.target===this)closeNmod();});
+
+/* ════════════════════════════════════════
+   RESULT
+════════════════════════════════════════ */
+var _lc=null;
+function renderResult(calc){
+  _lc=calc;
+  var sym=calc.sym,totA=calc.totalAssets,dbt=calc.debts,
+      net=calc.netWealth,nis=calc.nisab,std=calc.std,
+      due=calc.zakahDue,amt=calc.zakahAmount;
+  var h='<div class="rh">'
+    +'<div class="rb '+(due?'due':'nd')+'">'+(due?'🌙':'✅')+'</div>'
+    +'<div class="rl">'+(due?t('rdul'):t('tbr'))+'</div>'
+    +(due?'<div class="ra amiri cg"><span class="rsym">'+sym+' </span>'+fmt(amt)+'</div><div class="rm">'+t('rdm')+'</div>'
+         :'<div class="ra" style="font-size:1.35rem;color:var(--grl)">'+t('rnd')+'</div><div class="rm">'+t('rndm')+'</div>')
+    +'</div>';
+  h+='<div class="sumc"><div class="ct" style="margin-bottom:9px">'+t('smh')+'</div>';
+  Object.entries(calc.assets).forEach(function(e){if(e[1]>0)h+='<div class="sr"><span class="srl">'+e[0]+'</span><span class="srv">'+fmt(e[1])+' '+sym+'</span></div>';});
+  if(dbt>0) h+='<div class="sr sr-d"><span class="srl">'+t('st2')+'</span><span class="srv">− '+fmt(dbt)+' '+sym+'</span></div>';
+  h+='<div class="sr sr-t"><span class="srl">'+t('st1')+'</span><span class="srv">'+fmt(totA)+' '+sym+'</span></div>'
+    +'<div class="sr sr-n"><span class="srl">'+t('st4')+' ('+(std==='gold'?t('ng_'):t('ns_'))+')</span><span class="srv">'+fmt(nis)+' '+sym+'</span></div>'
+    +'<div class="sr"><span class="srl">'+t('st3')+'</span><span class="srv">'+fmt(net)+' '+sym+'</span></div>';
+  if(due) h+='<div class="divtx">'+t('zr')+'</div><div class="sr sr-z"><span class="srl" style="color:var(--tx);font-weight:600">'+t('st5')+'</span><span class="srv">'+fmt(amt)+' '+sym+'</span></div>';
+  h+='</div>';
+  h+='<div class="ra2">'
+    +(due?'<button class="btn bgold" onclick="goNav(\'pay\')">'+t('btr')+'</button>':'')
+    +'<button class="btn bol" onclick="copyRes()">'+t('bcp')+'</button>'
+    +'<button class="btn bol" onclick="startCalc()">'+t('bnc')+'</button>'
+    +'<button class="btn bol" onclick="goHome()">'+t('bhm')+'</button>'
+    +'</div>';
+  document.getElementById('rc').innerHTML=h;
+}
+function copyRes(){
+  if(!_lc) return;
+  var c=_lc, lines=[t('cph'),'─────────────',t('cpy')+': '+c.year];
+  Object.entries(c.assets).forEach(function(e){if(e[1]>0)lines.push(e[0]+': '+fmt(e[1])+' '+c.sym);});
+  if(c.debts>0) lines.push(t('cpd')+': − '+fmt(c.debts)+' '+c.sym);
+  lines.push(t('cpn')+': '+fmt(c.netWealth)+' '+c.sym, t('cps')+': '+fmt(c.nisab)+' '+c.sym);
+  lines.push(t('cpz')+': '+(c.zakahDue?fmt(c.zakahAmount)+' '+c.sym:t('cpnz')));
+  lines.push('─────────────', t('cpf'));
+  var txt=lines.join('\n');
+  if(navigator.clipboard){navigator.clipboard.writeText(txt).then(function(){toast(t('cpok'));});}
+  else{var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast(t('cpok'));}
+}
+
+/* ════════════════════════════════════════
+   HISTORY — original clean design + small icon buttons, sorted year desc
+════════════════════════════════════════ */
+function renderHist(){
+  var data=curDat();
+  var calcs=sortCalcs(data.calculations); // year desc
+  var h='<div class="hl">';
+  if(!calcs.length){
+    h+='<div class="ebx" style="margin-top:40px"><div class="ei">📋</div><div class="et">'+t('noh').replace('\n','<br>')+'</div></div>';
+  } else {
+    calcs.forEach(function(c){
+      var sym=CR[c.currency]||c.currency;
+      h+='<div class="hi'+(c.zakahDue?'':' nd')+'" data-hitem="'+c.id+'">'
+        +'<div class="hr1">'
+        +'<div><div class="hy">'+t('yr')+' '+c.year+'</div>'
+        +'<div class="hd">'+c.date+' · '+(c.std==='gold'?t('hng'):t('hns'))+'</div></div>'
+        +'<div class="hico-row">'
+        +'<button class="hico edt" data-eid="'+c.id+'" title="'+t('edt')+'">✏️</button>'
+        +'<button class="hico del" data-hid="'+c.id+'" title="'+t('dl')+'">✕</button>'
+        +'</div></div>'
+        +'<div class="hg2">'
+        +'<div class="hst"><div class="hsl">'+t('hnt')+'</div><div class="hsv">'+fmt(c.netWealth)+' '+sym+'</div></div>'
+        +'<div class="hst"><div class="hsl">'+t('hni')+'</div><div class="hsv">'+fmt(c.nisab)+' '+sym+'</div></div>'
+        +'<div class="hst"><div class="hsl">'+t('htt')+'</div><div class="hsv">'+fmt(c.totalAssets)+' '+sym+'</div></div>'
+        +'<div class="hst"><div class="hsl">'+t('hzt')+'</div><div class="hsv '+(c.zakahDue?'tg':'tgr')+'">'+(c.zakahDue?fmtA(c.zakahAmount,sym):t('nz'))+'</div></div>'
+        +'</div></div>';
+    });
+  }
+  h+='</div>';
+  var container=document.getElementById('hc');
+  container.innerHTML=h;
+  container.onclick=function(e){
+    var eb=e.target.closest('.edt');
+    if(eb){editCalc(eb.getAttribute('data-eid'));return;}
+    var db=e.target.closest('.del');
+    if(!db) return;
+    var id=db.getAttribute('data-hid');
+    if(!confirm(t('dlq'))) return;
+    var row=container.querySelector('[data-hitem="'+id+'"]');
+    if(row){row.style.transition='transform .22s ease,opacity .22s ease';row.style.transform='translateX(110%)';row.style.opacity='0';}
+    setTimeout(function(){
+      var d=curDat();
+      d.calculations=d.calculations.filter(function(c){return c.id!==id;});
+      d.payments=d.payments.filter(function(p){return p.calcId!==id;});
+      saveCur(d);
+      if(_dashCid===id)_dashCid=null;
+      if(_payTab===id)_payTab=null;
+      renderHist(); toast(t('dlok'));
+    },230);
+  };
+}
+
+/* ════════════════════════════════════════
+   PAYMENTS — sorted year desc
+════════════════════════════════════════ */
+var _payTab=null;
+function renderPay(){
+  var data=curDat();
+  var calcs=sortCalcs(data.calculations); // year desc
+  var pays=data.payments;
+  if(!calcs.find(function(c){return c.id===_payTab;}))
+    _payTab=calcs.length?calcs[0].id:null;
+  var defSym=calcs.length?CR[calcs[0].currency]||calcs[0].currency:'EGP';
+  var allZ=calcs.filter(function(c){return c.zakahDue;}).reduce(function(s,c){return s+c.zakahAmount;},0);
+  var allP=pays.reduce(function(s,p){return s+p.amount;},0);
+  var allR=Math.max(0,allZ-allP);
+  var allPct=allZ>0?Math.min(100,Math.round(allP/allZ*100)):0;
+  var h='<div class="psum"><div class="pst">📊 '+t('ays')+'</div>'
+    +'<div class="p3"><div class="p3c"><div class="p3v tg">'+(calcs.length?fmt(allZ):'—')+'</div><div class="p3l">'+t('pt')+' '+defSym+'</div></div>'
+    +'<div class="p3c"><div class="p3v tgr">'+fmt(allP)+'</div><div class="p3l">'+t('pp')+' '+defSym+'</div></div>'
+    +'<div class="p3c"><div class="p3v '+(allR>0?'tr':'tgr')+'">'+fmt(allR)+'</div><div class="p3l">'+t('pr')+' '+defSym+'</div></div></div>'
+    +'<div class="pbg"><div class="pbf'+(allPct>=100?' done':'')+'" style="width:'+allPct+'%"></div></div>'
+    +'<div class="pbc">'+allPct+'% '+t('ppl')+'</div></div>';
+  if(!calcs.length){
+    h+='<div class="ebx" style="margin-top:40px"><div class="ei">🤲</div><div class="et">'+t('npa').replace('\n','<br>')+'</div></div>';
+    document.getElementById('pc').innerHTML=h; return;
+  }
+  h+='<div class="pytw"><div class="pyts" id="pyts">';
+  calcs.forEach(function(c){h+='<button class="pytb'+(c.id===_payTab?' on':'')+'" data-tid="'+c.id+'">'+t('yr')+' '+c.year+'</button>';});
+  h+='</div></div>';
+  var sel=calcs.find(function(c){return c.id===_payTab;})||calcs[0];
+  var sym=CR[sel.currency]||sel.currency;
+  var sp=pays.filter(function(p){return p.calcId===sel.id;});
+  var sZ=sel.zakahDue?sel.zakahAmount:0;
+  var sP=sp.reduce(function(s,p){return s+p.amount;},0);
+  var sR=Math.max(0,sZ-sP);
+  var sPct=sZ>0?Math.min(100,Math.round(sP/sZ*100)):0;
+  h+='<div class="yrd"><div style="font-size:.75rem;color:var(--mu);margin-bottom:9px;font-weight:600">'+t('yr')+' '+sel.year+'</div>';
+  if(sel.zakahDue){
+    h+='<div class="p3"><div class="p3c"><div class="p3v tg">'+fmt(sZ)+'</div><div class="p3l">'+t('pt')+' '+sym+'</div></div>'
+      +'<div class="p3c"><div class="p3v tgr">'+fmt(sP)+'</div><div class="p3l">'+t('pp')+'</div></div>'
+      +'<div class="p3c"><div class="p3v '+(sR>0?'tr':'tgr')+'">'+fmt(sR)+'</div><div class="p3l">'+t('pr')+'</div></div></div>'
+      +'<div class="pbg" style="margin-top:9px"><div class="pbf'+(sPct>=100?' done':'')+'" style="width:'+sPct+'%"></div></div>'
+      +'<div class="pbc">'+sPct+'% '+t('ppl')+'</div>';
+  } else {
+    h+='<div style="text-align:center;color:var(--grl);font-size:.83rem;padding:8px">✅ '+t('nzy')+'</div>';
+  }
+  h+='</div>';
+  h+='<div class="shdr"><div class="sht">'+t('plt')+' — '+sel.year+'</div>'
+    +(sp.length?'<span style="font-size:.67rem;color:var(--mu)">'+t('swipe_hint')+'</span>':'')
+    +'</div>';
+  h+='<div class="pls" id="plist">';
+  if(!sp.length){
+    h+='<div class="ebx"><div class="ei">🤲</div><div class="et">'+t('npa').replace('\n','<br>')+'</div></div>';
+  } else {
+    sp.slice().reverse().forEach(function(p){
+      h+='<div class="pc-wrap" data-pid="'+p.id+'">'
+        +'<div class="pc-del-bg"><span>🗑️</span></div>'
+        +'<div class="pc"><div class="pci">🕌</div>'
+        +'<div class="pcb"><div class="pcw">'+(p.recipient||'—')+'</div>'
+        +(p.note?'<div class="pcn">'+p.note+'</div>':'')
+        +'<div class="pcd">'+(p.date||'')+'</div></div>'
+        +'<div class="pcr"><div class="pca">'+fmt(p.amount)+' '+sym+'</div></div>'
+        +'</div></div>';
+    });
+  }
+  h+='</div>';
+  var container=document.getElementById('pc');
+  container.innerHTML=h;
+  var pyts=document.getElementById('pyts');
+  if(pyts){pyts.onclick=function(e){var b=e.target.closest('[data-tid]');if(b){_payTab=b.getAttribute('data-tid');renderPay();}};}
+  var plist=document.getElementById('plist');
+  if(plist) initPaySwipe(plist);
+}
+function initPaySwipe(list){
+  list.querySelectorAll('.pc-wrap').forEach(function(wrap){
+    var card=wrap.querySelector('.pc');
+    var sx,sy,sw=false,deleted=false;
+    var pid=wrap.getAttribute('data-pid');
+    card.addEventListener('touchstart',function(e){sx=e.touches[0].clientX;sy=e.touches[0].clientY;sw=false;deleted=false;},{passive:true});
+    card.addEventListener('touchmove',function(e){
+      if(deleted) return;
+      var dx=e.touches[0].clientX-sx, dy=e.touches[0].clientY-sy;
+      if(!sw&&Math.abs(dy)>Math.abs(dx)) return;
+      sw=true;
+      var dir=L==='ar'?dx:-dx;
+      if(dir>0){
+        card.classList.add('swiping');
+        var tx=L==='ar'?Math.min(dx,90):Math.max(dx,-90);
+        card.style.transform='translateX('+tx+'px)';
+        card.style.opacity=String(1-(dir/120));
+      }
+    },{passive:true});
+    card.addEventListener('touchend',function(e){
+      if(!sw||deleted) return;
+      card.classList.remove('swiping');
+      var dx=e.changedTouches[0].clientX-sx;
+      var dir=L==='ar'?dx:-dx;
+      if(dir>65){
+        deleted=true;
+        card.style.transition='transform .22s ease,opacity .22s ease';
+        card.style.transform='translateX('+(L==='ar'?'110%':'-110%')+')';
+        card.style.opacity='0';
+        setTimeout(function(){
+          var d=curDat();
+          d.payments=d.payments.filter(function(p){return p.id!==pid;});
+          saveCur(d); renderPay(); renderDash(); toast(t('dlok'));
+        },230);
+      } else {card.style.transform='';card.style.opacity='';}
+    },{passive:true});
+  });
+}
+
+/* ════════════════════════════════════════
+   PAYMENT MODAL
+════════════════════════════════════════ */
+function openModal(){
+  var data=curDat(), calcs=sortCalcs(data.calculations), pays=data.payments;
+  var sel=document.getElementById('my');
+  sel.innerHTML='';
+  if(!calcs.length){var op=document.createElement('option');op.value='';op.textContent=t('noc');sel.appendChild(op);}
+  else{calcs.forEach(function(c){var op=document.createElement('option');op.value=c.id;op.textContent=t('yr')+' '+c.year+' ('+(c.zakahDue?fmtA(c.zakahAmount,CR[c.currency]||c.currency):t('nz'))+')';if(c.id===_payTab)op.selected=true;sel.appendChild(op);});}
+  function updInfo(){
+    var c=calcs.find(function(x){return x.id===sel.value;});
+    document.getElementById('msym').textContent=c?CR[c.currency]||c.currency:'EGP';
+    var mrem=document.getElementById('mrem');
+    if(!mrem) return;
+    if(!c||!c.zakahDue){
+      mrem.innerHTML='<div class="mrem-hint" style="color:var(--grl)">✅ '+t('mrem_none')+'</div>';
+      return;
+    }
+    var sym=CR[c.currency]||c.currency;
+    var paid=pays.filter(function(p){return p.calcId===c.id;}).reduce(function(s,p){return s+p.amount;},0);
+    var rem=Math.max(0,c.zakahAmount-paid);
+    mrem.innerHTML='<div class="mrem-hint">'
+      +'<div class="mrem-row"><span style="color:var(--mu)">'+t('mrem_d')+'</span><span class="tg">'+fmtA(c.zakahAmount,sym)+'</span></div>'
+      +'<div class="mrem-row"><span style="color:var(--mu)">'+t('mrem_p')+'</span><span class="tgr">'+fmtA(paid,sym)+'</span></div>'
+      +'<div class="mrem-row"><span style="color:var(--mu)">'+t('mrem_r')+'</span><span class="'+(rem>0?'tr':'tgr')+'"><strong>'+fmtA(rem,sym)+'</strong></span></div>'
+      +'</div>';
+  }
+  updInfo(); sel.onchange=updInfo;
+  document.getElementById('md').value=today();
+  document.getElementById('pmod').classList.add('on');
+}
+function closeModal(){document.getElementById('pmod').classList.remove('on');document.getElementById('mw').value='';document.getElementById('ma').value='';document.getElementById('mn').value='';}
+document.getElementById('pmod').addEventListener('click',function(e){if(e.target===this)closeModal();});
+function savePayment(){
+  var who=document.getElementById('mw').value.trim();
+  var amt=parseFloat(document.getElementById('ma').value)||0;
+  var cid=document.getElementById('my').value;
+  var dt=document.getElementById('md').value;
+  var note=document.getElementById('mn').value.trim();
+  if(!who){toast('⚠️ '+t('ew'));return;}if(amt<=0){toast('⚠️ '+t('ea'));return;}
+  var data=curDat();data.payments.push({id:uid(),calcId:cid,recipient:who,amount:amt,date:dt,note:note});saveCur(data);
+  if(cid)_payTab=cid;closeModal();renderPay();renderDash();toast(t('ps'));
+}
+
+/* ════════════════════════════════════════
+   ENCRYPTION — AES-GCM / PBKDF2
+════════════════════════════════════════ */
+var _encMode=null, _encFileContent=null;
+
+async function _deriveKey(password, salt){
+  var enc=new TextEncoder();
+  var km=await crypto.subtle.importKey('raw',enc.encode(password),'PBKDF2',false,['deriveKey']);
+  return crypto.subtle.deriveKey(
+    {name:'PBKDF2',salt:salt,iterations:100000,hash:'SHA-256'},
+    km,{name:'AES-GCM',length:256},false,['encrypt','decrypt']
+  );
+}
+async function _encrypt(json, password){
+  var salt=crypto.getRandomValues(new Uint8Array(16));
+  var iv=crypto.getRandomValues(new Uint8Array(12));
+  var key=await _deriveKey(password,salt);
+  var ct=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv},key,new TextEncoder().encode(json));
+  var out=new Uint8Array(16+12+ct.byteLength);
+  out.set(salt,0);out.set(iv,16);out.set(new Uint8Array(ct),28);
+  // base64 encode
+  var bin='';var bytes=out;
+  for(var i=0;i<bytes.byteLength;i++) bin+=String.fromCharCode(bytes[i]);
+  return btoa(bin);
+}
+async function _decrypt(b64, password){
+  var bin=atob(b64);
+  var bytes=new Uint8Array(bin.length);
+  for(var i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
+  var salt=bytes.slice(0,16), iv=bytes.slice(16,28), ct=bytes.slice(28);
+  var key=await _deriveKey(password,salt);
+  var pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:iv},key,ct);
+  return new TextDecoder().decode(pt);
+}
+
+function showEmod(mode, content){
+  _encMode=mode; _encFileContent=content||null;
+  var isExp=mode==='export';
+  document.getElementById('emod-t').textContent=t(isExp?'enc_exp_t':'enc_imp_t');
+  document.getElementById('emod-l').textContent=t(isExp?'enc_pw_exp':'enc_pw_imp');
+  document.getElementById('emod-hint').innerHTML=t(isExp?'enc_hint_exp':'enc_hint_imp');
+  document.getElementById('emod-pw').value='';
+  document.getElementById('emod').classList.add('on');
+  setTimeout(function(){document.getElementById('emod-pw').focus();},300);
+}
+function closeEmod(){document.getElementById('emod').classList.remove('on');_encMode=null;_encFileContent=null;}
+document.getElementById('emod').addEventListener('click',function(e){if(e.target===this)closeEmod();});
+
+async function doEnc(){
+  var pw=document.getElementById('emod-pw').value;
+  if(!pw||pw.length<4){toast('⚠️ '+t('enc_short'));return;}
+  var mode=_encMode, content=_encFileContent;
+  closeEmod();
+  if(mode==='export'){
+    var uname=getCur();
+    var payload=JSON.stringify({version:3,exported:today(),user:uname,userData:getUs()[uname],data:curDat()});
+    try{
+      var enc=await _encrypt(payload,pw);
+      var blob=new Blob([enc],{type:'application/octet-stream'});
+      var url=URL.createObjectURL(blob);
+      var a=document.createElement('a');a.href=url;a.download='zakat-'+uname+'-'+today()+'.zak';
+      document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+      toast(t('enc_ok'));
+    }catch(e){toast(t('enc_err'));}
+  } else {
+    try{
+      var json=await _decrypt(content,pw);
+      mergeImport(json);
+    }catch(e){toast(t('enc_wrong'));}
+  }
+}
+
+/* ════════════════════════════════════════
+   EXPORT — optional encryption
+════════════════════════════════════════ */
+function exportData(){ showExpChoice(); }
+
+function showExpChoice(){
+  document.getElementById('expmod').classList.add('on');
+}
+function doExportPlain(){
+  document.getElementById('expmod').classList.remove('on');
+  var uname=getCur();
+  var json=JSON.stringify({version:3,exported:today(),user:uname,userData:getUs()[uname],data:curDat()},null,2);
+  var blob=new Blob([json],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download='zakat-'+uname+'-'+today()+'.json';
+  document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+  toast('📄 '+t('exp_plain_s'));
+}
+function doExportEnc(){
+  document.getElementById('expmod').classList.remove('on');
+  showEmod('export');
+}
+
+function triggerImport(){ document.getElementById('import-file').click(); }
+
+function importData(input){
+  var file=input.files[0];
+  if(!file){return;}
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var content=e.target.result.trim();
+    input.value='';
+    if(content.startsWith('{')){mergeImport(content);return;}
+    showEmod('import',content);
+  };
+  reader.readAsText(file);
+}
+
+function mergeImport(json){
+  try{
+    var payload=JSON.parse(json);
+    if(!payload.data||!payload.data.calculations) throw new Error('invalid');
+    var d=curDat();
+    var existIds=d.calculations.map(function(c){return c.id;});
+    payload.data.calculations.forEach(function(c){if(existIds.indexOf(c.id)<0)d.calculations.push(c);});
+    var existPids=d.payments.map(function(p){return p.id;});
+    payload.data.payments.forEach(function(p){if(existPids.indexOf(p.id)<0)d.payments.push(p);});
+    saveCur(d); renderProf(); renderDash(); toast(t('impok'));
+  }catch(e){toast('❌ '+t('imperr'));}
+}
+
+/* ════════════════════════════════════════
+   AUTO-BACKUP — local + Google Drive
+════════════════════════════════════════ */
+function getBkpCfg(){
+  var def={localOn:false,localInt:'daily',lastLocal:0};
+  try{return Object.assign(def,JSON.parse(localStorage.getItem('zak_bkpcfg_'+(getCur()||''))||'{}'));}catch(e){return def;}
+}
+function saveBkpCfg(c){localStorage.setItem('zak_bkpcfg_'+(getCur()||''),JSON.stringify(c));}
+
+var _bkpTimer=null;
+function _schedAutoBackup(){
+  clearTimeout(_bkpTimer);
+  _bkpTimer=setTimeout(_runAutoBackup,1800);
+}
+function _runAutoBackup(){
+  var cfg=getBkpCfg();
+  if(!getCur()) return;
+  var now=Date.now();
+  var ms={daily:864e5,weekly:6048e5,monthly:2592e6};
+  var iv=ms[cfg.localInt]||864e5;
+  if(cfg.localOn && now-cfg.lastLocal >= iv){
+    var uname=getCur();
+    var payload=JSON.stringify({version:3,exported:new Date().toISOString(),user:uname,userData:getUs()[uname],data:curDat()});
+    localStorage.setItem('zak_bkp_'+uname,payload);
+    cfg.lastLocal=now; saveBkpCfg(cfg);
+    toast(t('bkp_ok_local'),2200);
+    renderProf();
+  }
+}
+
+function downloadLocalBackup(){
+  var uname=getCur();
+  var raw=localStorage.getItem('zak_bkp_'+uname);
+  if(!raw){toast('⚠️ '+t('bkp_never'));return;}
+  _dlBlob(new Blob([raw],{type:'application/json'}),'zakat-local-'+uname+'-'+today()+'.json');
+}
+
+function toggleLocalBkp(){ var c=getBkpCfg(); c.localOn=!c.localOn; saveBkpCfg(c); renderProf(); }
+function setLocalInt(v){ var c=getBkpCfg(); c.localInt=v; saveBkpCfg(c); }
+
+/* ════════════════════════════════════════
+   WEB SHARE CLOUD BACKUP
+════════════════════════════════════════ */
+var _driveToken = null; // kept for any legacy references
+
+async function shareBackup(){
+  var uname=getCur();
+  var payload=JSON.stringify({version:3,exported:new Date().toISOString(),user:uname,userData:getUs()[uname],data:curDat()},null,2);
+  var fname='zakat-'+uname+'-'+today()+'.json';
+  var blob=new Blob([payload],{type:'application/json'});
+  // Try Web Share API with file (Android Chrome, Safari 15+)
+  if(navigator.share){
+    var shareData={title:'Zakah Backup — '+uname, text:'Zakah al-Mal backup file'};
+    try{
+      var file=new File([blob],fname,{type:'application/json'});
+      if(navigator.canShare && navigator.canShare({files:[file]})){
+        await navigator.share({title:shareData.title, files:[file]});
+        toast(t('share_ok')); return;
+      }
+    }catch(e){ if(e.name==='AbortError') return; }
+    // Fallback: share URL (create object URL, share as link)
+    try{
+      var url=URL.createObjectURL(blob);
+      await navigator.share({title:shareData.title, url:url});
+      setTimeout(function(){URL.revokeObjectURL(url);},5000);
+      toast(t('share_ok')); return;
+    }catch(e){ if(e.name==='AbortError') return; }
+  }
+  // Final fallback: download file
+  _dlBlob(blob,fname);
+}
+
+function _dlBlob(blob,fname){
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a'); a.href=url; a.download=fname;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){URL.revokeObjectURL(url);},2000);
+}
+
+/* ════════════════════════════════════════
+   INSTALL
+════════════════════════════════════════ */
+function showInstall(){
+  var isPWA=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone;
+  document.getElementById('imod-t').textContent=t('inst_t');
+  var btn=document.getElementById('imod-btn');
+  var body='';
+
+  if(isPWA){
+    // Already installed
+    body='<div style="text-align:center;padding:16px 0 8px">'
+      +'<div style="font-size:2.4rem;margin-bottom:10px">✅</div>'
+      +'<p style="font-size:.88rem;color:var(--mu);line-height:1.6">'+t('inst_already')+'</p>'
+      +'</div>';
+    btn.style.display='none';
+  } else if(_installPrompt){
+    // Native install prompt available
+    body='<p style="font-size:.87rem;color:var(--mu);line-height:1.7;margin-bottom:16px">'+t('inst_s')+'</p>';
+    btn.textContent=t('inst_btn'); btn.style.display='block';
+  } else {
+    // Manual instructions for all platforms
+    var isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+    body='<p style="font-size:.82rem;color:var(--mu);line-height:1.6;margin-bottom:14px">'+t('inst_open')+'</p>'
+      +'<div style="display:flex;flex-direction:column;gap:9px;margin-bottom:14px">'
+      // Android step
+      +'<div style="display:flex;align-items:flex-start;gap:11px;background:rgba(255,255,255,.04);border-radius:var(--rs);padding:12px 13px;border:1px solid var(--bd2)">'
+      +'<div style="font-size:1.3rem;flex-shrink:0;line-height:1">🤖</div>'
+      +'<div><div style="font-size:.82rem;font-weight:700;color:var(--tx);margin-bottom:3px">'+t('inst_android')+'</div>'
+      +'<div style="font-size:.72rem;color:var(--mu)">Chrome → ⋮ → Add to Home Screen → Install</div></div>'
+      +'</div>'
+      // iOS step
+      +'<div style="display:flex;align-items:flex-start;gap:11px;background:rgba(255,255,255,.04);border-radius:var(--rs);padding:12px 13px;border:1px solid var(--bd2)">'
+      +'<div style="font-size:1.3rem;flex-shrink:0;line-height:1">🍎</div>'
+      +'<div><div style="font-size:.82rem;font-weight:700;color:var(--tx);margin-bottom:3px">'+t('inst_ios_step')+'</div>'
+      +'<div style="font-size:.72rem;color:var(--mu)">Safari → 🔗 Share → Add to Home Screen</div></div>'
+      +'</div>'
+      +'</div>'
+      +'<div class="nbox" style="font-size:.74rem">'+t('inst_tip')+'</div>';
+    btn.style.display='none';
+  }
+  document.getElementById('imod-body').innerHTML=body;
+  document.getElementById('imod').classList.add('on');
+}
+document.getElementById('imod').addEventListener('click',function(e){if(e.target===this)closeImod();});
+
+/* ════════════════════════════════════════
+   PROFILE
+════════════════════════════════════════ */
+function renderProf(){
+  var uname=getCur(), user=getUs()[uname];
+  var data=curDat(), calcs=data.calculations, pays=data.payments;
+  var tpm={};
+  pays.forEach(function(p){var c=calcs.find(function(x){return x.id===p.calcId;});var sym=c?CR[c.currency]||c.currency:'EGP';tpm[sym]=(tpm[sym]||0)+p.amount;});
+  var tps=Object.entries(tpm).map(function(e){return fmtA(e[1],e[0]);}).join(' + ')||'0';
+  var isPWA=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone;
+
+  var cfg=getBkpCfg();
+  var fmtTs=function(ts){return ts?new Date(ts).toLocaleDateString():t('bkp_never');};
+  var arr=L==='ar'?'←':'→';
+
+  // Build auto-backup section
+  var bkpHtml=
+    '<div class="psec"><div class="psect">'+t('bkp')+'</div>'
+    // Manual export/import row
+    +'<div class="pblk" style="margin-bottom:9px">'
+    +'<div class="pit2" onclick="exportData()"><div class="pit2-i">📤</div><div class="pit2-l">'+t('exp')+'</div><div class="pit2-v">'+t('exps')+'</div><div class="pit2-arr">'+arr+'</div></div>'
+    +'<div class="pit2" onclick="triggerImport()"><div class="pit2-i">📥</div><div class="pit2-l">'+t('imp')+'</div><div class="pit2-v">'+t('imps')+'</div><div class="pit2-arr">'+arr+'</div></div>'
+    +'</div>'
+    +'<div class="psect" style="margin-top:4px">'+t('bkp_sect')+'</div>'
+    // Local auto-backup block
+    +'<div class="pblk" style="margin-bottom:9px">'
+    +'<div class="bk-row"><span class="bk-ico">📍</span>'
+    +'<div class="bk-body"><div class="bk-t">'+t('bkp_local')+'</div><div class="bk-s">'+t('bkp_last')+': '+fmtTs(cfg.lastLocal)+'</div></div>'
+    +'<button class="tog'+(cfg.localOn?' on':'')+'" onclick="toggleLocalBkp()"></button></div>'
+    +(cfg.localOn
+      ? '<div class="bk-row" style="flex-wrap:wrap;gap:7px">'
+        +'<span class="bk-ico">🕐</span>'
+        +'<span style="font-size:.75rem;color:var(--mu)">'+t('bkp_every')+'</span>'
+        +'<select class="bk-sel" onchange="setLocalInt(this.value)">'
+        +'<option value="daily"'+(cfg.localInt==='daily'?' selected':'')+'>'+t('bkp_daily')+'</option>'
+        +'<option value="weekly"'+(cfg.localInt==='weekly'?' selected':'')+'>'+t('bkp_weekly')+'</option>'
+        +'<option value="monthly"'+(cfg.localInt==='monthly'?' selected':'')+'>'+t('bkp_monthly')+'</option>'
+        +'</select>'
+        +'<button class="bk-btn" onclick="downloadLocalBackup()">'+t('bkp_dl')+'</button>'
+        +'</div>'
+      : '')
+    +'</div>'
+    // Cloud share block (Web Share API)
+    +'<div class="pblk">'
+    +'<div class="bk-row"><span class="bk-ico">☁️</span>'
+    +'<div class="bk-body"><div class="bk-t">'+t('bkp_cloud')+'</div><div class="bk-s">'+t('bkp_cloud_s')+'</div></div>'
+    +'</div>'
+    +'<div class="bk-row" style="flex-wrap:wrap;gap:7px;padding-top:4px">'
+    +'<button class="bk-btn" style="flex:1" onclick="shareBackup()">'+t('share_bkp')+'</button>'
+    +'<button class="bk-btn" onclick="triggerImport()">'+t('imp')+'</button>'
+    +'</div>'
+    +'</div>'
+    +'</div>';
+
+  document.getElementById('prc').innerHTML=
+    '<div class="ph">'
+    +'<div class="pav">'+user.name.charAt(0)+'</div>'
+    +'<div class="pnm amiri cg">'+user.name+'</div>'
+    +(user.email?'<div class="pem">'+user.email+'</div>':'')
+    +'<div class="psn">'+t('snc')+' '+(user.since||'—')+'</div>'
+    +'</div>'
+    +(isPWA
+      ? '<div class="inst-banner" style="opacity:.6;cursor:default"><div class="inst-ico">✅</div><div class="inst-tx"><div class="inst-t">'+t('inst_already')+'</div></div></div>'
+      : '<div class="inst-banner" onclick="showInstall()"><div class="inst-ico">📲</div><div class="inst-tx"><div class="inst-t">'+t('inst_t')+'</div><div class="inst-s">'+t('inst_s')+'</div></div><div style="color:var(--gd);font-size:.9rem">'+arr+'</div></div>'
+    )
+    +'<div class="psec"><div class="psect">'+t('mys')+'</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">'
+    +'<div class="sc" style="cursor:default"><div class="si">🧮</div><div class="slb">'+t('cld')+'</div><div class="sv vg">'+calcs.length+'</div></div>'
+    +'<div class="sc" style="cursor:default"><div class="si">💳</div><div class="slb">'+t('tpl')+'</div><div class="sv vgr" style="font-size:.82rem">'+tps+'</div></div>'
+    +'</div></div>'
+    +bkpHtml
+    +'<div class="psec"><div class="psect">'+t('ai')+'</div><div class="pblk">'
+    +'<div class="pit2"><div class="pit2-i">👤</div><div class="pit2-l">'+t('aiu')+'</div><div class="pit2-v">@'+uname+'</div></div>'
+    +'<div class="pit2"><div class="pit2-i">✏️</div><div class="pit2-l">'+t('ain')+'</div><div class="pit2-v">'+user.name+'</div></div>'
+    +(user.email?'<div class="pit2"><div class="pit2-i">📧</div><div class="pit2-l">'+t('aie')+'</div><div class="pit2-v">'+user.email+'</div></div>':'')
+    +'</div></div>'
+    +'<div class="psec"><div class="psect">'+t('abt')+'</div><div class="pblk">'
+    +'<div class="pit2"><div class="pit2-i">ℹ️</div><div class="pit2-l">'+t('apn')+'</div><div class="pit2-v">'+t('ver')+'</div></div>'
+    +'<div class="pit2"><div class="pit2-i">🕌</div><div class="pit2-l">'+t('fqh')+'</div><div class="pit2-v">'+t('gen')+'</div></div>'
+    +'</div></div>'
+    +'<div class="psec"><button class="btn bdng" onclick="doLogout()">'+t('lgb')+'</button></div>';
+}
+</script>
+</body>
+</html>
