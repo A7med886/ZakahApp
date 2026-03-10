@@ -364,6 +364,28 @@ input[type=number]{-moz-appearance:textfield}
 .drfile-n{font-size:.83rem;font-weight:600}
 .drfile-d{font-size:.68rem;color:var(--mu);margin-top:1px}
 
+/* DRIVE SETUP WIZARD */
+.gd-step{display:flex;gap:12px;align-items:flex-start;padding:12px 13px;background:rgba(255,255,255,.03);border:1px solid var(--bd2);border-radius:var(--rs);margin-bottom:8px}
+.gd-num{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--gd),var(--gold));color:#0d1f13;font-size:.75rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.gd-step-body{flex:1;min-width:0}
+.gd-step-t{font-size:.84rem;font-weight:700;color:var(--tx);margin-bottom:3px}
+.gd-step-s{font-size:.72rem;color:var(--mu);line-height:1.55}
+.gd-code{background:rgba(0,0,0,.4);border:1px solid rgba(201,168,76,.15);border-radius:var(--rx);padding:10px 12px;font-size:.64rem;font-family:monospace;color:var(--mu2);line-height:1.6;white-space:pre-wrap;word-break:break-all;max-height:130px;overflow-y:auto;margin:6px 0}
+.gd-connected{display:flex;align-items:center;gap:11px;padding:13px;background:rgba(61,160,104,.07);border:1px solid rgba(61,160,104,.2);border-radius:var(--rs);margin-bottom:10px}
+.gd-conn-ico{font-size:1.5rem}
+.gd-conn-t{font-size:.87rem;font-weight:700;color:var(--grl)}
+.gd-conn-s{font-size:.7rem;color:var(--mu);margin-top:2px}
+.gd-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.gd-act{display:flex;flex-direction:column;align-items:center;gap:5px;padding:13px 8px;background:var(--card);border:1px solid var(--bd2);border-radius:var(--rs);cursor:pointer;transition:border-color .2s,background .2s}
+.gd-act:active{background:var(--c2);border-color:var(--bdr)}
+.gd-act-i{font-size:1.4rem}
+.gd-act-t{font-size:.73rem;font-weight:600;text-align:center}
+.gd-act-s{font-size:.63rem;color:var(--mu);text-align:center}
+.gd-url-row{display:flex;gap:7px;margin-top:8px}
+.gd-auto{display:flex;align-items:center;gap:9px;padding:11px 13px;background:var(--card);border:1px solid var(--bd2);border-radius:var(--rs);margin-bottom:8px}
+.gd-prog{height:3px;border-radius:2px;background:rgba(255,255,255,.07);overflow:hidden;margin-top:10px}
+.gd-prog-bar{height:100%;background:linear-gradient(90deg,var(--grn),var(--grl));border-radius:2px;transition:width .4s ease}
+
 input[type=file]{display:none}
 </style>
 </head>
@@ -569,12 +591,22 @@ input[type=file]{display:none}
   </div>
 </div>
 
+<!-- ══ GOOGLE DRIVE SETUP MODAL ══ -->
+<div class="mov" id="gdmod">
+  <div class="msh" style="max-height:92vh;overflow-y:auto">
+    <div class="mhd"></div>
+    <div class="mtt" id="gdmod-t">☁️ جوجل درايف</div>
+    <div id="gdmod-body"></div>
+    <button class="btn bol mt10" onclick="document.getElementById('gdmod').classList.remove('on')" id="gdmod-cancel">إلغاء</button>
+  </div>
+</div>
+
 <!-- ══ DRIVE RESTORE MODAL ══ -->
 <div class="mov" id="drmod">
   <div class="msh">
     <div class="mhd"></div>
     <div class="mtt" id="drmod-t">⬆️ استعادة من درايف</div>
-    <div id="drmod-list" style="max-height:55vh;overflow-y:auto;border-radius:var(--rs);overflow:hidden;background:var(--card);border:1px solid var(--bd2)"></div>
+    <div id="drmod-list" style="max-height:55vh;overflow-y:auto;border-radius:var(--rs);background:var(--card);border:1px solid var(--bd2)"></div>
     <button class="btn bol mt10" onclick="document.getElementById('drmod').classList.remove('on')">إلغاء</button>
   </div>
 </div>
@@ -741,7 +773,24 @@ ar:{
   inst_open:'افتح الملف في متصفح كروم (أندرويد) أو سفاري (iOS)',
   inst_android:'أندرويد — كروم: القائمة ⋮ ← "إضافة للشاشة الرئيسية"',
   inst_ios_step:'iOS — سفاري: زر المشاركة ← "إضافة للشاشة الرئيسية"',
-  inst_tip:'💡 يُفضَّل فتح الملف من رابط بدلاً من تحميله مباشرة لتفعيل زر التثبيت'
+  inst_tip:'💡 يُفضَّل فتح الملف من رابط بدلاً من تحميله مباشرة لتفعيل زر التثبيت',
+  gd_t:'☁️ نسخ احتياطي على جوجل درايف',
+  gd_connect:'ربط جوجل درايف', gd_connected:'متصل بجوجل درايف',
+  gd_last:'آخر نسخة', gd_never:'لم يتم بعد',
+  gd_backup_now:'💾 نسخ الآن', gd_restore:'⬆️ استعادة',
+  gd_disconnect:'قطع الاتصال', gd_auto:'نسخ تلقائي',
+  gd_backing:'جاري النسخ...', gd_ok:'✅ تم النسخ على درايف',
+  gd_err:'فشل الاتصال — تحقق من الرابط', gd_url_ph:'الصق رابط التطبيق هنا',
+  gd_save_url:'حفظ', gd_test:'اختبار', gd_test_ok:'✅ الاتصال يعمل',
+  gd_setup_t:'إعداد جوجل درايف — مرة واحدة فقط',
+  gd_step1_t:'افتح جوجل سكريبت', gd_step1_s:'script.google.com ← مشروع جديد',
+  gd_step2_t:'انسخ الكود', gd_step2_s:'احذف الكود الموجود والصق هذا:',
+  gd_step3_t:'انشر كتطبيق ويب', gd_step3_s:'نشر ← نشر جديد ← تطبيق ويب ← التنفيذ: أنا ← الوصول: أي شخص ← نشر',
+  gd_step4_t:'الصق الرابط', gd_step4_s:'بعد النشر ستحصل على رابط — انسخه والصقه أدناه:',
+  gd_copy_code:'📋 نسخ الكود', gd_open_script:'🔗 فتح سكريبت',
+  gd_code_copied:'✅ تم نسخ الكود', gd_list_empty:'لا يوجد نسخ بعد',
+  gd_list_t:'اختر نسخة للاستعادة', gd_restore_ok:'✅ تم الاستعادة',
+  gd_del_ok:'🗑️ تم الحذف', gd_testing:'جاري الاختبار...'
 },
 en:{
   app:'Zakah al-Mal', sub:'Smart Zakah Calculator',
@@ -852,7 +901,24 @@ en:{
   inst_open:'Open this file in Chrome (Android) or Safari (iOS)',
   inst_android:'Android — Chrome: Menu ⋮ → "Add to Home Screen"',
   inst_ios_step:'iOS — Safari: Share button → "Add to Home Screen"',
-  inst_tip:'💡 Opening via a URL (not downloaded file) enables the native Install button'
+  inst_tip:'💡 Opening via a URL (not downloaded file) enables the native Install button',
+  gd_t:'☁️ Google Drive Backup',
+  gd_connect:'Connect Google Drive', gd_connected:'Connected to Google Drive',
+  gd_last:'Last backup', gd_never:'Never',
+  gd_backup_now:'💾 Backup Now', gd_restore:'⬆️ Restore',
+  gd_disconnect:'Disconnect', gd_auto:'Auto backup',
+  gd_backing:'Backing up...', gd_ok:'✅ Backed up to Google Drive',
+  gd_err:'Connection failed — check the URL', gd_url_ph:'Paste your web app URL here',
+  gd_save_url:'Save', gd_test:'Test', gd_test_ok:'✅ Connection works',
+  gd_setup_t:'Google Drive Setup — one time only',
+  gd_step1_t:'Open Google Apps Script', gd_step1_s:'Go to script.google.com → New project',
+  gd_step2_t:'Copy the code', gd_step2_s:'Delete the existing code and paste this:',
+  gd_step3_t:'Deploy as Web App', gd_step3_s:'Deploy → New deployment → Web app → Execute as: Me → Access: Anyone → Deploy',
+  gd_step4_t:'Paste the URL', gd_step4_s:'After deploying, copy the Web App URL and paste it below:',
+  gd_copy_code:'📋 Copy Code', gd_open_script:'🔗 Open Script',
+  gd_code_copied:'✅ Code copied', gd_list_empty:'No backups found yet',
+  gd_list_t:'Choose a backup to restore', gd_restore_ok:'✅ Restored successfully',
+  gd_del_ok:'🗑️ Deleted', gd_testing:'Testing connection...'
 }};
 
 function t(k){ return (I[L]&&I[L][k]) || (I.ar&&I.ar[k]) || k; }
@@ -1638,7 +1704,7 @@ function saveBkpCfg(c){localStorage.setItem('zak_bkpcfg_'+(getCur()||''),JSON.st
 var _bkpTimer=null;
 function _schedAutoBackup(){
   clearTimeout(_bkpTimer);
-  _bkpTimer=setTimeout(_runAutoBackup,1800);
+  _bkpTimer=setTimeout(function(){ _runAutoBackup(); _runGdAutoBackup(); },1800);
 }
 function _runAutoBackup(){
   var cfg=getBkpCfg();
@@ -1667,35 +1733,280 @@ function toggleLocalBkp(){ var c=getBkpCfg(); c.localOn=!c.localOn; saveBkpCfg(c
 function setLocalInt(v){ var c=getBkpCfg(); c.localInt=v; saveBkpCfg(c); }
 
 /* ════════════════════════════════════════
-   WEB SHARE CLOUD BACKUP
+   GOOGLE DRIVE — APPS SCRIPT RELAY
 ════════════════════════════════════════ */
-var _driveToken = null; // kept for any legacy references
+var _driveToken = null; // legacy ref kept
 
-async function shareBackup(){
-  var uname=getCur();
-  var payload=JSON.stringify({version:3,exported:new Date().toISOString(),user:uname,userData:getUs()[uname],data:curDat()},null,2);
-  var fname='zakat-'+uname+'-'+today()+'.json';
-  var blob=new Blob([payload],{type:'application/json'});
-  // Try Web Share API with file (Android Chrome, Safari 15+)
-  if(navigator.share){
-    var shareData={title:'Zakah Backup — '+uname, text:'Zakah al-Mal backup file'};
-    try{
-      var file=new File([blob],fname,{type:'application/json'});
-      if(navigator.canShare && navigator.canShare({files:[file]})){
-        await navigator.share({title:shareData.title, files:[file]});
-        toast(t('share_ok')); return;
-      }
-    }catch(e){ if(e.name==='AbortError') return; }
-    // Fallback: share URL (create object URL, share as link)
-    try{
-      var url=URL.createObjectURL(blob);
-      await navigator.share({title:shareData.title, url:url});
-      setTimeout(function(){URL.revokeObjectURL(url);},5000);
-      toast(t('share_ok')); return;
-    }catch(e){ if(e.name==='AbortError') return; }
+/* The Apps Script code users paste into script.google.com */
+var GAS_CODE = `function doPost(e){
+  try{
+    var p=JSON.parse(e.postData.contents);
+    var fn=p.filename||('zakat-backup-'+new Date().toISOString().slice(0,10)+'.json');
+    var c=JSON.stringify(p.data);
+    var files=DriveApp.getFilesByName(fn);
+    if(files.hasNext()) files.next().setContent(c);
+    else DriveApp.createFile(fn,c,MimeType.PLAIN_TEXT);
+    return ContentService.createTextOutput(JSON.stringify({ok:true}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }catch(err){
+    return ContentService.createTextOutput(JSON.stringify({ok:false,error:err.toString()}))
+      .setMimeType(ContentService.MimeType.JSON);
   }
-  // Final fallback: download file
-  _dlBlob(blob,fname);
+}
+function doGet(e){
+  try{
+    var a=e.parameter.action||'list';
+    if(a==='list'){
+      var iter=DriveApp.searchFiles("title contains 'zakat-backup'");
+      var res=[];
+      while(iter.hasNext()){var f=iter.next();res.push({id:f.getId(),name:f.getName(),date:f.getLastUpdated().toISOString(),size:f.getSize()});}
+      res.sort(function(a,b){return b.date.localeCompare(a.date);});
+      return ContentService.createTextOutput(JSON.stringify({ok:true,files:res}))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    if(a==='get'){
+      var file=DriveApp.getFileById(e.parameter.id);
+      return ContentService.createTextOutput(file.getBlob().getDataAsString())
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    if(a==='delete'){
+      DriveApp.getFileById(e.parameter.id).setTrashed(true);
+      return ContentService.createTextOutput(JSON.stringify({ok:true}))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    if(a==='ping'){
+      return ContentService.createTextOutput(JSON.stringify({ok:true,msg:'pong'}))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }catch(err){
+    return ContentService.createTextOutput(JSON.stringify({ok:false,error:err.toString()}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}`;
+
+function getGdUrl(){ return localStorage.getItem('zak_gdurl_'+(getCur()||''))||''; }
+function saveGdUrl(url){ localStorage.setItem('zak_gdurl_'+(getCur()||''),url.trim()); }
+
+function openGdModal(){
+  var url=getGdUrl();
+  var arr=L==='ar'?'←':'→';
+  var body='';
+  document.getElementById('gdmod-t').textContent=t('gd_t');
+
+  if(url){
+    // Connected state
+    var cfg=getBkpCfg();
+    var fmtTs=function(ts){return ts?new Date(ts).toLocaleDateString(L==='ar'?'ar-EG':'en-US'):t('gd_never');};
+    body+='<div class="gd-connected">'
+      +'<div class="gd-conn-ico">☁️</div>'
+      +'<div><div class="gd-conn-t">'+t('gd_connected')+'</div>'
+      +'<div class="gd-conn-s">'+t('gd_last')+': '+fmtTs(cfg.lastDrive||0)+'</div></div>'
+      +'</div>'
+      // Action cards
+      +'<div class="gd-actions">'
+      +'<div class="gd-act" onclick="gdBackupNow()">'
+        +'<div class="gd-act-i">💾</div>'
+        +'<div class="gd-act-t">'+t('gd_backup_now')+'</div>'
+        +'<div class="gd-act-s" id="gd-prog-lbl"></div>'
+      +'</div>'
+      +'<div class="gd-act" onclick="gdOpenRestore()">'
+        +'<div class="gd-act-i">⬆️</div>'
+        +'<div class="gd-act-t">'+t('gd_restore')+'</div>'
+        +'<div class="gd-act-s">'+t('gd_list_t')+'</div>'
+      +'</div>'
+      +'</div>'
+      // Auto backup toggle
+      +'<div class="gd-auto">'
+        +'<div style="flex:1"><div style="font-size:.84rem;font-weight:600">'+t('gd_auto')+'</div>'
+        +'<div style="font-size:.7rem;color:var(--mu)">'+t('bkp_every')+': '
+          +'<select class="bk-sel" onchange="setGdInt(this.value)">'
+          +'<option value="daily"'+(cfg.gdInt==='daily'||!cfg.gdInt?' selected':'')+'>'+t('bkp_daily')+'</option>'
+          +'<option value="weekly"'+(cfg.gdInt==='weekly'?' selected':'')+'>'+t('bkp_weekly')+'</option>'
+          +'<option value="monthly"'+(cfg.gdInt==='monthly'?' selected':'')+'>'+t('bkp_monthly')+'</option>'
+          +'</select></div>'
+        +'</div>'
+        +'<button class="tog'+(cfg.gdAutoOn?' on':'')+'" onclick="toggleGdAuto()"></button>'
+      +'</div>'
+      // Disconnect / change URL
+      +'<div style="display:flex;gap:8px">'
+      +'<button class="bk-btn dng" style="flex:1" onclick="gdDisconnect()">✕ '+t('gd_disconnect')+'</button>'
+      +'</div>';
+  } else {
+    // Setup wizard
+    body+='<p style="font-size:.82rem;color:var(--mu);line-height:1.6;margin-bottom:14px">'+t('gd_setup_t')+'</p>'
+      // Step 1
+      +'<div class="gd-step"><div class="gd-num">1</div><div class="gd-step-body">'
+        +'<div class="gd-step-t">'+t('gd_step1_t')+'</div>'
+        +'<div class="gd-step-s">'+t('gd_step1_s')+'</div>'
+        +'<a href="https://script.google.com" target="_blank" class="bk-btn" style="display:inline-block;margin-top:7px;text-decoration:none">'+t('gd_open_script')+' ↗</a>'
+      +'</div></div>'
+      // Step 2 — code
+      +'<div class="gd-step"><div class="gd-num">2</div><div class="gd-step-body">'
+        +'<div class="gd-step-t">'+t('gd_step2_t')+'</div>'
+        +'<div class="gd-step-s">'+t('gd_step2_s')+'</div>'
+        +'<div class="gd-code" id="gas-code">'+GAS_CODE.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div>'
+        +'<button class="bk-btn" onclick="copyGasCode()">'+t('gd_copy_code')+'</button>'
+      +'</div></div>'
+      // Step 3
+      +'<div class="gd-step"><div class="gd-num">3</div><div class="gd-step-body">'
+        +'<div class="gd-step-t">'+t('gd_step3_t')+'</div>'
+        +'<div class="gd-step-s">'+t('gd_step3_s')+'</div>'
+      +'</div></div>'
+      // Step 4 — URL input
+      +'<div class="gd-step"><div class="gd-num">4</div><div class="gd-step-body">'
+        +'<div class="gd-step-t">'+t('gd_step4_t')+'</div>'
+        +'<div class="gd-step-s">'+t('gd_step4_s')+'</div>'
+        +'<div class="gd-url-row">'
+          +'<input class="bk-inp" type="url" id="gd-url-inp" placeholder="'+t('gd_url_ph')+'" />'
+          +'<button class="bk-btn" onclick="gdTestAndSave()" id="gd-test-btn">'+t('gd_test')+'</button>'
+        +'</div>'
+        +'<div id="gd-test-result" style="font-size:.72rem;margin-top:5px;min-height:16px"></div>'
+      +'</div></div>';
+  }
+
+  document.getElementById('gdmod-body').innerHTML=body;
+  document.getElementById('gdmod').classList.add('on');
+}
+
+function copyGasCode(){
+  try{ navigator.clipboard.writeText(GAS_CODE); toast(t('gd_code_copied')); }
+  catch(e){
+    var ta=document.createElement('textarea'); ta.value=GAS_CODE;
+    ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); ta.remove();
+    toast(t('gd_code_copied'));
+  }
+}
+
+async function gdTestAndSave(){
+  var inp=document.getElementById('gd-url-inp');
+  if(!inp) return;
+  var url=inp.value.trim();
+  if(!url){ toast('⚠️ '+t('gd_url_ph')); return; }
+  var btn=document.getElementById('gd-test-btn');
+  var res=document.getElementById('gd-test-result');
+  btn.textContent=t('gd_testing'); btn.disabled=true;
+  res.style.color='var(--mu)'; res.textContent='...';
+  try{
+    var resp=await fetch(url+'?action=ping',{method:'GET'});
+    var data=await resp.json();
+    if(data.ok){
+      res.style.color='var(--grl)'; res.textContent=t('gd_test_ok');
+      saveGdUrl(url); var cfg=getBkpCfg(); cfg.gdAutoOn=true; saveBkpCfg(cfg);
+      setTimeout(function(){ document.getElementById('gdmod').classList.remove('on'); renderProf(); toast(t('gd_connected')); }, 900);
+    } else {
+      res.style.color='var(--dng)'; res.textContent='❌ '+t('gd_err');
+    }
+  }catch(e){
+    res.style.color='var(--dng)'; res.textContent='❌ '+t('gd_err');
+  }
+  btn.textContent=t('gd_test'); btn.disabled=false;
+}
+
+function gdDisconnect(){
+  if(!confirm(t('gd_disconnect')+'?')) return;
+  saveGdUrl('');
+  var cfg=getBkpCfg(); cfg.gdAutoOn=false; saveBkpCfg(cfg);
+  document.getElementById('gdmod').classList.remove('on');
+  renderProf(); toast('🔌 '+t('gd_disconnect'));
+}
+
+function toggleGdAuto(){ var c=getBkpCfg(); c.gdAutoOn=!c.gdAutoOn; saveBkpCfg(c); openGdModal(); }
+function setGdInt(v){ var c=getBkpCfg(); c.gdInt=v; saveBkpCfg(c); }
+
+async function gdBackupNow(){
+  var url=getGdUrl();
+  if(!url){ openGdModal(); return; }
+  var lbl=document.getElementById('gd-prog-lbl');
+  if(lbl){ lbl.textContent=t('gd_backing'); }
+  var uname=getCur();
+  var fname='zakat-backup-'+uname+'-'+today()+'.json';
+  var payload={filename:fname, data:{version:3,exported:new Date().toISOString(),user:uname,userData:getUs()[uname],data:curDat()}};
+  try{
+    var resp=await fetch(url,{method:'POST',body:JSON.stringify(payload)});
+    var data=await resp.json();
+    if(data.ok){
+      var cfg=getBkpCfg(); cfg.lastDrive=Date.now(); saveBkpCfg(cfg);
+      toast(t('gd_ok'));
+      if(document.getElementById('gdmod').classList.contains('on')) openGdModal();
+      renderProf();
+    } else { toast('❌ '+t('gd_err')); }
+  }catch(e){ toast('❌ '+t('gd_err')); }
+}
+
+async function gdOpenRestore(){
+  var url=getGdUrl();
+  if(!url){ openGdModal(); return; }
+  document.getElementById('gdmod').classList.remove('on');
+  document.getElementById('drmod-t').textContent=t('gd_list_t');
+  document.getElementById('drmod-list').innerHTML='<div style="text-align:center;padding:24px;color:var(--mu);font-size:.82rem">'+t('bkp_loading')+'</div>';
+  document.getElementById('drmod').classList.add('on');
+  try{
+    var resp=await fetch(url+'?action=list');
+    var data=await resp.json();
+    var files=data.files||[];
+    if(!files.length){
+      document.getElementById('drmod-list').innerHTML='<div style="text-align:center;padding:24px;color:var(--mu);font-size:.84rem">'+t('gd_list_empty')+'</div>';
+      return;
+    }
+    var html='';
+    files.forEach(function(f){
+      var d=new Date(f.date);
+      var ds=d.toLocaleDateString(L==='ar'?'ar-EG':'en-US')+' '+d.toLocaleTimeString();
+      var kb=f.size?Math.round(f.size/1024)+'KB':'';
+      html+='<div class="drfile">'
+        +'<div style="font-size:1.1rem">☁️</div>'
+        +'<div style="flex:1;min-width:0" onclick="gdRestoreFile(\''+f.id+'\')" style="cursor:pointer">'
+          +'<div class="drfile-n">'+f.name+'</div>'
+          +'<div class="drfile-d">'+ds+(kb?' · '+kb:'')+'</div>'
+        +'</div>'
+        +'<button class="hico del" onclick="gdDeleteFile(\''+f.id+'\',this)" style="margin-left:6px">✕</button>'
+        +'</div>';
+    });
+    document.getElementById('drmod-list').innerHTML=html;
+  }catch(e){
+    document.getElementById('drmod-list').innerHTML='<div style="text-align:center;padding:24px;color:var(--dng);font-size:.82rem">❌ '+t('gd_err')+'</div>';
+  }
+}
+
+async function gdRestoreFile(fileId){
+  var url=getGdUrl();
+  if(!url) return;
+  document.getElementById('drmod').classList.remove('on');
+  try{
+    var resp=await fetch(url+'?action=get&id='+fileId);
+    var json=await resp.text();
+    mergeImport(json);
+    toast(t('gd_restore_ok'));
+  }catch(e){ toast('❌ '+t('gd_err')); }
+}
+
+async function gdDeleteFile(fileId, btn){
+  var url=getGdUrl();
+  if(!url) return;
+  btn.textContent='...'; btn.disabled=true;
+  try{
+    var resp=await fetch(url+'?action=delete&id='+fileId);
+    var data=await resp.json();
+    if(data.ok){
+      var row=btn.closest('.drfile');
+      if(row){ row.style.opacity='0'; row.style.transition='opacity .2s'; setTimeout(function(){if(row.parentNode)row.parentNode.removeChild(row);},200); }
+      toast(t('gd_del_ok'));
+    }
+  }catch(e){ btn.textContent='✕'; btn.disabled=false; }
+}
+
+/* Auto backup runs after each save */
+function _runGdAutoBackup(){
+  var url=getGdUrl();
+  if(!url) return;
+  var cfg=getBkpCfg();
+  if(!cfg.gdAutoOn) return;
+  var now=Date.now();
+  var ms={daily:864e5,weekly:6048e5,monthly:2592e6};
+  var iv=ms[cfg.gdInt||'daily']||864e5;
+  if(now-(cfg.lastDrive||0) >= iv) gdBackupNow();
 }
 
 function _dlBlob(blob,fname){
@@ -1793,17 +2104,19 @@ function renderProf(){
         +'</div>'
       : '')
     +'</div>'
-    // Cloud share block (Web Share API)
-    +'<div class="pblk">'
-    +'<div class="bk-row"><span class="bk-ico">☁️</span>'
-    +'<div class="bk-body"><div class="bk-t">'+t('bkp_cloud')+'</div><div class="bk-s">'+t('bkp_cloud_s')+'</div></div>'
-    +'</div>'
-    +'<div class="bk-row" style="flex-wrap:wrap;gap:7px;padding-top:4px">'
-    +'<button class="bk-btn" style="flex:1" onclick="shareBackup()">'+t('share_bkp')+'</button>'
-    +'<button class="bk-btn" onclick="triggerImport()">'+t('imp')+'</button>'
-    +'</div>'
-    +'</div>'
-    +'</div>';
+    // Google Drive block
+    +(function(){
+      var gdUrl=getGdUrl();
+      var connected=!!gdUrl;
+      return '<div class="pit2" onclick="openGdModal()" style="cursor:pointer">'
+        +'<div class="pit2-i">☁️</div>'
+        +'<div class="pit2-l">'+t('gd_t')+'</div>'
+        +'<div class="pit2-v" style="color:'+(connected?'var(--grl)':'var(--mu)')+'">'+
+          (connected?'✅ '+t('gd_connected'):t('gd_connect'))+'</div>'
+        +'<div class="pit2-arr">'+arr+'</div>'
+        +'</div>';
+    }())
+    +'</div></div>';  // close pblk + psec
 
   document.getElementById('prc').innerHTML=
     '<div class="ph">'
