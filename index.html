@@ -2024,7 +2024,7 @@ async function gdTestAndSave(){
     var d1=await r1.json();
     if(!d1.ok) throw new Error(d1.error||'ping failed');
     // Step 2: verify key by listing files
-    var r2=await fetch(url+'?action=list&key='+encodeURIComponent(apiKey));
+    var r2=await fetch(url+'?action=list&key='+encodeURIComponent(apiKey)+'&user='+encodeURIComponent(getCur()||'_test'));
     if(!r2.ok) throw new Error('HTTP '+r2.status);
     var d2=await r2.json();
     if(!d2.ok) throw new Error(d2.error==='Unauthorized'?t('gd_wrong_key'):(d2.error||'auth failed'));
