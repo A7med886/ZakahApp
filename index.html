@@ -1844,7 +1844,7 @@ function doPost(e) {
 
     const body   = JSON.parse(e.postData.contents);
     const folder = getFolder();
-    const ts     = new Date().toISOString().slice(0, 19).replace(/:/g, "-");
+    const ts = new Date().toISOString().slice(0,10);
     const fname  = body.filename || ("zakat-backup-" + ts + ".json");
 
     // Store the full backup payload as-is (mergeImport reads it directly)
@@ -2025,7 +2025,7 @@ async function gdBackupNow(){
   var lbl=document.getElementById('gd-prog-lbl');
   if(lbl) lbl.textContent=t('gd_backing');
   var uname=getCur();
-  var ts=new Date().toISOString().slice(0,19).replace(/:/g,'-');
+  var ts = new Date().toISOString().slice(0,10);
   // body.data is the full restorable payload (what mergeImport reads)
   var payload={
     filename: 'zakat-'+uname+'-'+ts+'.json',
