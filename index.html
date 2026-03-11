@@ -1749,74 +1749,87 @@ var _driveToken = null; // legacy ref kept
 
 /* The Apps Script code users paste into script.google.com */
 var GAS_CODE = `// ═══════════════════════════════════════════════════════════
-// Zakah al-Mal — Google Drive Backup Script
+// Zakah al-Mal — Google Drive Backup Script v4
 // ───────────────────────────────────────────────────────────
 // SETUP:
-//  1. Change CHANGE_THIS_SECRET_KEY to any secret password
+//  1. Change CHANGE_THIS_SECRET_KEY to your own secret word
 //  2. Deploy → New deployment → Web App
 //     • Execute as  : Me
 //     • Who has access : Anyone
-//  3. Copy the Web App URL, paste it in the app
+//  3. Copy the Web App URL → paste in the app
 //  4. Enter the same secret key you set here
 // ═══════════════════════════════════════════════════════════
 
 const API_KEY     = "CHANGE_THIS_SECRET_KEY"; // ← change this
 const FOLDER_NAME = "ZakahBackups";
-const MAX_BACKUPS = 10; // keep 10 most recent per folder
+const MAX_BACKUPS = 10; // per user
 
+// ── helpers ──────────────────────────────────────────────────
 function getFolder() {
   const it = DriveApp.getFoldersByName(FOLDER_NAME);
   return it.hasNext() ? it.next() : DriveApp.createFolder(FOLDER_NAME);
 }
 
 function checkKey(e) {
-  if (!e.parameter.key || e.parameter.key !== API_KEY)
+  if (!e.parameter || !e.parameter.key || e.parameter.key !== API_KEY)
     throw new Error("Unauthorized");
 }
 
-function ok(d) {
+function inFolder(folder, fileId) {
+  // Security: make sure the file actually lives in ZakahBackups
+  const it = folder.getFilesByName(DriveApp.getFileById(fileId).getName());
+  while (it.hasNext()) { if (it.next().getId() === fileId) return true; }
+  return false;
+}
+
+function resp(d) {
   return ContentService
     .createTextOutput(JSON.stringify(Object.assign({ ok: true }, d)))
     .setMimeType(ContentService.MimeType.JSON);
 }
-
-function err(msg) {
+function respErr(msg) {
   return ContentService
     .createTextOutput(JSON.stringify({ ok: false, error: String(msg) }))
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-// ── doGet ────────────────────────────────────────────────────
+// ── doGet: ping / list / get / delete ────────────────────────
 function doGet(e) {
   try {
     const action = (e.parameter && e.parameter.action) || "list";
 
-    // ping is intentionally public — used to verify URL before key entry
+    // ping — always public, used to verify the URL is correct
     if (action === "ping")
-      return ok({ msg: "pong", version: "3.0", folder: FOLDER_NAME });
+      return resp({ msg: "pong", version: "4.0", folder: FOLDER_NAME });
 
-    checkKey(e); // all other actions require the key
+    checkKey(e);
     const folder = getFolder();
 
     if (action === "list") {
-      const files = folder.getFiles();
+      // Optional: filter by username so each user sees only their files
+      const user   = (e.parameter.user || "").toLowerCase().trim();
+      const prefix = user ? ("zakat-" + user + "-") : "zakat-";
+      const it     = folder.getFiles();
       const result = [];
-      while (files.hasNext()) {
-        const f = files.next();
+      while (it.hasNext()) {
+        const f = it.next();
+        const name = f.getName();
+        if (!name.startsWith(prefix)) continue; // skip other users
         result.push({
           id   : f.getId(),
-          name : f.getName(),
+          name : name,
           date : f.getLastUpdated().toISOString(),
           size : f.getSize()
         });
       }
       result.sort((a, b) => new Date(b.date) - new Date(a.date));
-      return ok({ files: result });
+      return resp({ files: result });
     }
 
     if (action === "get") {
       const id = e.parameter.id;
       if (!id) throw new Error("Missing file id");
+      if (!inFolder(folder, id)) throw new Error("File not in ZakahBackups");
       return ContentService
         .createTextOutput(DriveApp.getFileById(id).getBlob().getDataAsString())
         .setMimeType(ContentService.MimeType.JSON);
@@ -1825,49 +1838,57 @@ function doGet(e) {
     if (action === "delete") {
       const id = e.parameter.id;
       if (!id) throw new Error("Missing file id");
+      if (!inFolder(folder, id)) throw new Error("File not in ZakahBackups");
       DriveApp.getFileById(id).setTrashed(true);
-      return ok({});
+      return resp({});
     }
 
     throw new Error("Unknown action: " + action);
-  } catch (e2) {
-    return err(e2.message || e2);
+  } catch (ex) {
+    return respErr(ex.message || ex);
   }
 }
 
-// ── doPost: save + auto-cleanup ──────────────────────────────
+// ── doPost: upsert (same-day = overwrite) + auto-cleanup ─────
 function doPost(e) {
   try {
-    checkKey(e); // key must be in URL: ?key=YOUR_SECRET_KEY
+    checkKey(e); // key is in URL: ?key=YOUR_SECRET_KEY
     if (!e.postData || !e.postData.contents)
       throw new Error("No data received");
 
-    const body   = JSON.parse(e.postData.contents);
-    const folder = getFolder();
-    const ts = new Date().toISOString().slice(0,10);
-    const fname  = body.filename || ("zakat-backup-" + ts + ".json");
+    const body    = JSON.parse(e.postData.contents);
+    const folder  = getFolder();
+    const dateStr = new Date().toISOString().slice(0, 10); // YYYY-MM-DD only
+    const user    = (body.user || "backup").toLowerCase();
+    const fname   = "zakat-" + user + "-" + dateStr + ".json";
+    const content = JSON.stringify(body.data);
 
-    // Store the full backup payload as-is (mergeImport reads it directly)
-    const file = folder.createFile(
-      fname,
-      JSON.stringify(body.data),
-      MimeType.PLAIN_TEXT
-    );
-
-    // Auto-cleanup: trash oldest files beyond MAX_BACKUPS
-    const all = [];
-    const it = folder.getFiles();
-    while (it.hasNext()) {
-      const f = it.next();
-      all.push({ id: f.getId(), date: f.getLastUpdated() });
+    // Upsert: if a file with the same name exists today, overwrite it
+    const existing = folder.getFilesByName(fname);
+    let file;
+    if (existing.hasNext()) {
+      file = existing.next();
+      file.setContent(content);
+    } else {
+      file = folder.createFile(fname, content, MimeType.PLAIN_TEXT);
     }
-    all.sort((a, b) => b.date - a.date);
-    for (let i = MAX_BACKUPS; i < all.length; i++)
-      DriveApp.getFileById(all[i].id).setTrashed(true);
 
-    return ok({ id: file.getId(), name: file.getName(), total: all.length });
-  } catch (e2) {
-    return err(e2.message || e2);
+    // Auto-cleanup per user: keep MAX_BACKUPS most recent files
+    const prefix  = "zakat-" + user + "-";
+    const allIt   = folder.getFiles();
+    const allUser = [];
+    while (allIt.hasNext()) {
+      const f = allIt.next();
+      if (f.getName().startsWith(prefix))
+        allUser.push({ id: f.getId(), date: f.getLastUpdated() });
+    }
+    allUser.sort((a, b) => b.date - a.date);
+    for (let i = MAX_BACKUPS; i < allUser.length; i++)
+      DriveApp.getFileById(allUser[i].id).setTrashed(true);
+
+    return resp({ id: file.getId(), name: file.getName(), total: allUser.length });
+  } catch (ex) {
+    return respErr(ex.message || ex);
   }
 }`;
 
@@ -2025,10 +2046,11 @@ async function gdBackupNow(){
   var lbl=document.getElementById('gd-prog-lbl');
   if(lbl) lbl.textContent=t('gd_backing');
   var uname=getCur();
-  var ts = new Date().toISOString().slice(0,10);
-  // body.data is the full restorable payload (what mergeImport reads)
+  // date-only filename matches server upsert key (same-day = overwrite)
+  var dateStr=new Date().toISOString().slice(0,10); // YYYY-MM-DD
   var payload={
-    filename: 'zakat-'+uname+'-'+ts+'.json',
+    filename: 'zakat-'+uname+'-'+dateStr+'.json',
+    user    : uname,
     data: {
       version :3,
       exported:new Date().toISOString(),
@@ -2041,7 +2063,7 @@ async function gdBackupNow(){
     // key is sent as URL param so checkKey(e) can read e.parameter.key
     var resp=await fetch(url+'?key='+encodeURIComponent(key),{
       method :'POST',
-      //headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json'},
       body   :JSON.stringify(payload)
     });
     var d=await resp.json();
@@ -2062,7 +2084,7 @@ async function gdOpenRestore(){
   document.getElementById('drmod-list').innerHTML='<div style="text-align:center;padding:24px;color:var(--mu);font-size:.82rem">'+t('bkp_loading')+'</div>';
   document.getElementById('drmod').classList.add('on');
   try{
-    var resp=await fetch(url+'?action=list&key='+encodeURIComponent(getGdKey()));
+    var resp=await fetch(url+'?action=list&key='+encodeURIComponent(getGdKey())+'&user='+encodeURIComponent(getCur()||''));
     var data=await resp.json();
     var files=data.files||[];
     if(!files.length){
