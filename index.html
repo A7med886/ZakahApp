@@ -2073,7 +2073,7 @@ async function gdBackupNow(){
     // key is sent as URL param so checkKey(e) can read e.parameter.key
     var resp=await fetch(url+'?key='+encodeURIComponent(key),{
       method :'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'text/plain'},
       body   :JSON.stringify(payload)
     });
     var d=await resp.json();
