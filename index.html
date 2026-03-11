@@ -785,12 +785,17 @@ ar:{
   gd_setup_t:'إعداد جوجل درايف — مرة واحدة فقط',
   gd_step1_t:'افتح جوجل سكريبت', gd_step1_s:'script.google.com ← مشروع جديد',
   gd_step2_t:'انسخ الكود', gd_step2_s:'احذف الكود الموجود والصق هذا:',
-  gd_step3_t:'انشر كتطبيق ويب', gd_step3_s:'نشر ← نشر جديد ← تطبيق ويب ← التنفيذ: أنا ← الوصول: أي شخص ← نشر',
+  gd_step4_t_deploy:'انشر كتطبيق ويب', gd_step4_s_deploy:'نشر ← نشر جديد ← تطبيق ويب ← التنفيذ: أنا ← الوصول: أي شخص ← نشر',
   gd_step4_t:'الصق الرابط', gd_step4_s:'بعد النشر ستحصل على رابط — انسخه والصقه أدناه:',
   gd_copy_code:'📋 نسخ الكود', gd_open_script:'🔗 فتح سكريبت',
   gd_code_copied:'✅ تم نسخ الكود', gd_list_empty:'لا يوجد نسخ بعد',
   gd_list_t:'اختر نسخة للاستعادة', gd_restore_ok:'✅ تم الاستعادة',
-  gd_del_ok:'🗑️ تم الحذف', gd_testing:'جاري الاختبار...'
+  gd_del_ok:'🗑️ تم الحذف', gd_testing:'جاري الاختبار...',
+  gd_key_ph:'مثال: mysecret123 — نفس الكلمة التي كتبتها في الكود',
+  gd_wrong_key:'كلمة المرور خاطئة — تحقق من API_KEY في الكود',
+  gd_step3_t:'عدّل مفتاح API', gd_step3_s:'في السطر الأول من الكود، غيّر CHANGE_THIS_SECRET_KEY إلى كلمة سر خاصة بك (احتفظ بها).',
+  gd_step5_t:'أدخل الرابط والمفتاح', gd_step5_s:'بعد النشر، انسخ رابط التطبيق وأدخل نفس كلمة السر.',
+  gd_key_exists:'مفتاح موجود — استخدم نفس الرابط أو اضغط قطع الاتصال في التطبيق الآخر'
 },
 en:{
   app:'Zakah al-Mal', sub:'Smart Zakah Calculator',
@@ -913,12 +918,17 @@ en:{
   gd_setup_t:'Google Drive Setup — one time only',
   gd_step1_t:'Open Google Apps Script', gd_step1_s:'Go to script.google.com → New project',
   gd_step2_t:'Copy the code', gd_step2_s:'Delete the existing code and paste this:',
-  gd_step3_t:'Deploy as Web App', gd_step3_s:'Deploy → New deployment → Web app → Execute as: Me → Access: Anyone → Deploy',
-  gd_step4_t:'Paste the URL', gd_step4_s:'After deploying, copy the Web App URL and paste it below:',
+  gd_step4_t_deploy:'Deploy as Web App', gd_step4_s_deploy:'Deploy → New deployment → Web app → Execute as: Me → Access: Anyone → Deploy',
+  gd_step4_t:'Deploy as Web App', gd_step4_s:'Deploy → New deployment → Web app → Execute as: Me → Access: Anyone → Deploy',
   gd_copy_code:'📋 Copy Code', gd_open_script:'🔗 Open Script',
   gd_code_copied:'✅ Code copied', gd_list_empty:'No backups found yet',
   gd_list_t:'Choose a backup to restore', gd_restore_ok:'✅ Restored successfully',
-  gd_del_ok:'🗑️ Deleted', gd_testing:'Testing connection...'
+  gd_del_ok:'🗑️ Deleted', gd_testing:'Testing connection...',
+  gd_key_ph:'e.g. mysecret123 — same word you wrote in the code',
+  gd_wrong_key:'Wrong API key — check API_KEY in your script',
+  gd_step3_t:'Set your API key', gd_step3_s:'On the first line of the code, change CHANGE_THIS_SECRET_KEY to your own secret password. Keep it safe.',
+  gd_step5_t:'Enter URL and key', gd_step5_s:'After deploying, paste the Web App URL and enter the same secret key.',
+  gd_key_exists:'API key already set — use the same URL or disconnect from the other device first'
 }};
 
 function t(k){ return (I[L]&&I[L][k]) || (I.ar&&I.ar[k]) || k; }
@@ -1738,54 +1748,133 @@ function setLocalInt(v){ var c=getBkpCfg(); c.localInt=v; saveBkpCfg(c); }
 var _driveToken = null; // legacy ref kept
 
 /* The Apps Script code users paste into script.google.com */
-var GAS_CODE = `function doPost(e){
-  try{
-    var p=JSON.parse(e.postData.contents);
-    var fn=p.filename||('zakat-backup-'+new Date().toISOString().slice(0,10)+'.json');
-    var c=JSON.stringify(p.data);
-    var files=DriveApp.getFilesByName(fn);
-    if(files.hasNext()) files.next().setContent(c);
-    else DriveApp.createFile(fn,c,MimeType.PLAIN_TEXT);
-    return ContentService.createTextOutput(JSON.stringify({ok:true}))
-      .setMimeType(ContentService.MimeType.JSON);
-  }catch(err){
-    return ContentService.createTextOutput(JSON.stringify({ok:false,error:err.toString()}))
-      .setMimeType(ContentService.MimeType.JSON);
+var GAS_CODE = `// ═══════════════════════════════════════════════════════════
+// Zakah al-Mal — Google Drive Backup Script
+// ───────────────────────────────────────────────────────────
+// SETUP:
+//  1. Change CHANGE_THIS_SECRET_KEY to any secret password
+//  2. Deploy → New deployment → Web App
+//     • Execute as  : Me
+//     • Who has access : Anyone
+//  3. Copy the Web App URL, paste it in the app
+//  4. Enter the same secret key you set here
+// ═══════════════════════════════════════════════════════════
+
+const API_KEY     = "CHANGE_THIS_SECRET_KEY"; // ← change this
+const FOLDER_NAME = "ZakahBackups";
+const MAX_BACKUPS = 10; // keep 10 most recent per folder
+
+function getFolder() {
+  const it = DriveApp.getFoldersByName(FOLDER_NAME);
+  return it.hasNext() ? it.next() : DriveApp.createFolder(FOLDER_NAME);
+}
+
+function checkKey(e) {
+  if (!e.parameter.key || e.parameter.key !== API_KEY)
+    throw new Error("Unauthorized");
+}
+
+function ok(d) {
+  return ContentService
+    .createTextOutput(JSON.stringify(Object.assign({ ok: true }, d)))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function err(msg) {
+  return ContentService
+    .createTextOutput(JSON.stringify({ ok: false, error: String(msg) }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// ── doGet ────────────────────────────────────────────────────
+function doGet(e) {
+  try {
+    const action = (e.parameter && e.parameter.action) || "list";
+
+    // ping is intentionally public — used to verify URL before key entry
+    if (action === "ping")
+      return ok({ msg: "pong", version: "3.0", folder: FOLDER_NAME });
+
+    checkKey(e); // all other actions require the key
+    const folder = getFolder();
+
+    if (action === "list") {
+      const files = folder.getFiles();
+      const result = [];
+      while (files.hasNext()) {
+        const f = files.next();
+        result.push({
+          id   : f.getId(),
+          name : f.getName(),
+          date : f.getLastUpdated().toISOString(),
+          size : f.getSize()
+        });
+      }
+      result.sort((a, b) => new Date(b.date) - new Date(a.date));
+      return ok({ files: result });
+    }
+
+    if (action === "get") {
+      const id = e.parameter.id;
+      if (!id) throw new Error("Missing file id");
+      return ContentService
+        .createTextOutput(DriveApp.getFileById(id).getBlob().getDataAsString())
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    if (action === "delete") {
+      const id = e.parameter.id;
+      if (!id) throw new Error("Missing file id");
+      DriveApp.getFileById(id).setTrashed(true);
+      return ok({});
+    }
+
+    throw new Error("Unknown action: " + action);
+  } catch (e2) {
+    return err(e2.message || e2);
   }
 }
-function doGet(e){
-  try{
-    var a=e.parameter.action||'list';
-    if(a==='list'){
-      var iter=DriveApp.searchFiles("title contains 'zakat-backup'");
-      var res=[];
-      while(iter.hasNext()){var f=iter.next();res.push({id:f.getId(),name:f.getName(),date:f.getLastUpdated().toISOString(),size:f.getSize()});}
-      res.sort(function(a,b){return b.date.localeCompare(a.date);});
-      return ContentService.createTextOutput(JSON.stringify({ok:true,files:res}))
-        .setMimeType(ContentService.MimeType.JSON);
+
+// ── doPost: save + auto-cleanup ──────────────────────────────
+function doPost(e) {
+  try {
+    checkKey(e); // key must be in URL: ?key=YOUR_SECRET_KEY
+    if (!e.postData || !e.postData.contents)
+      throw new Error("No data received");
+
+    const body   = JSON.parse(e.postData.contents);
+    const folder = getFolder();
+    const ts     = new Date().toISOString().slice(0, 19).replace(/:/g, "-");
+    const fname  = body.filename || ("zakat-backup-" + ts + ".json");
+
+    // Store the full backup payload as-is (mergeImport reads it directly)
+    const file = folder.createFile(
+      fname,
+      JSON.stringify(body.data),
+      MimeType.PLAIN_TEXT
+    );
+
+    // Auto-cleanup: trash oldest files beyond MAX_BACKUPS
+    const all = [];
+    const it = folder.getFiles();
+    while (it.hasNext()) {
+      const f = it.next();
+      all.push({ id: f.getId(), date: f.getLastUpdated() });
     }
-    if(a==='get'){
-      var file=DriveApp.getFileById(e.parameter.id);
-      return ContentService.createTextOutput(file.getBlob().getDataAsString())
-        .setMimeType(ContentService.MimeType.JSON);
-    }
-    if(a==='delete'){
-      DriveApp.getFileById(e.parameter.id).setTrashed(true);
-      return ContentService.createTextOutput(JSON.stringify({ok:true}))
-        .setMimeType(ContentService.MimeType.JSON);
-    }
-    if(a==='ping'){
-      return ContentService.createTextOutput(JSON.stringify({ok:true,msg:'pong'}))
-        .setMimeType(ContentService.MimeType.JSON);
-    }
-  }catch(err){
-    return ContentService.createTextOutput(JSON.stringify({ok:false,error:err.toString()}))
-      .setMimeType(ContentService.MimeType.JSON);
+    all.sort((a, b) => b.date - a.date);
+    for (let i = MAX_BACKUPS; i < all.length; i++)
+      DriveApp.getFileById(all[i].id).setTrashed(true);
+
+    return ok({ id: file.getId(), name: file.getName(), total: all.length });
+  } catch (e2) {
+    return err(e2.message || e2);
   }
 }`;
 
 function getGdUrl(){ return localStorage.getItem('zak_gdurl_'+(getCur()||''))||''; }
 function saveGdUrl(url){ localStorage.setItem('zak_gdurl_'+(getCur()||''),url.trim()); }
+function getGdKey(){ return localStorage.getItem('zak_gdkey_'+(getCur()||''))||''; }
+function saveGdKey(k){ localStorage.setItem('zak_gdkey_'+(getCur()||''),k); }
 
 function openGdModal(){
   var url=getGdUrl();
@@ -1834,33 +1923,39 @@ function openGdModal(){
   } else {
     // Setup wizard
     body+='<p style="font-size:.82rem;color:var(--mu);line-height:1.6;margin-bottom:14px">'+t('gd_setup_t')+'</p>'
-      // Step 1
+      // Step 1 — open script
       +'<div class="gd-step"><div class="gd-num">1</div><div class="gd-step-body">'
         +'<div class="gd-step-t">'+t('gd_step1_t')+'</div>'
         +'<div class="gd-step-s">'+t('gd_step1_s')+'</div>'
         +'<a href="https://script.google.com" target="_blank" class="bk-btn" style="display:inline-block;margin-top:7px;text-decoration:none">'+t('gd_open_script')+' ↗</a>'
       +'</div></div>'
-      // Step 2 — code
+      // Step 2 — copy code (highlight the key line)
       +'<div class="gd-step"><div class="gd-num">2</div><div class="gd-step-body">'
         +'<div class="gd-step-t">'+t('gd_step2_t')+'</div>'
         +'<div class="gd-step-s">'+t('gd_step2_s')+'</div>'
-        +'<div class="gd-code" id="gas-code">'+GAS_CODE.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div>'
-        +'<button class="bk-btn" onclick="copyGasCode()">'+t('gd_copy_code')+'</button>'
+        +'<div class="gd-code">'+GAS_CODE.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div>'
+        +'<button class="bk-btn" onclick="copyGasCode()" style="margin-top:6px">'+t('gd_copy_code')+'</button>'
       +'</div></div>'
-      // Step 3
+      // Step 3 — change key + deploy
       +'<div class="gd-step"><div class="gd-num">3</div><div class="gd-step-body">'
         +'<div class="gd-step-t">'+t('gd_step3_t')+'</div>'
         +'<div class="gd-step-s">'+t('gd_step3_s')+'</div>'
       +'</div></div>'
-      // Step 4 — URL input
+      // Step 4 — deploy
       +'<div class="gd-step"><div class="gd-num">4</div><div class="gd-step-body">'
         +'<div class="gd-step-t">'+t('gd_step4_t')+'</div>'
         +'<div class="gd-step-s">'+t('gd_step4_s')+'</div>'
-        +'<div class="gd-url-row">'
-          +'<input class="bk-inp" type="url" id="gd-url-inp" placeholder="'+t('gd_url_ph')+'" />'
-          +'<button class="bk-btn" onclick="gdTestAndSave()" id="gd-test-btn">'+t('gd_test')+'</button>'
+      +'</div></div>'
+      // Step 5 — paste URL + enter key
+      +'<div class="gd-step"><div class="gd-num">5</div><div class="gd-step-body">'
+        +'<div class="gd-step-t">'+t('gd_step5_t')+'</div>'
+        +'<div class="gd-step-s">'+t('gd_step5_s')+'</div>'
+        +'<input class="bk-inp" type="url"      id="gd-url-inp" placeholder="'+t('gd_url_ph')+'" style="margin-top:8px"/>'
+        +'<input class="bk-inp" type="password" id="gd-key-inp" placeholder="'+t('gd_key_ph')+'" style="margin-top:6px"/>'
+        +'<div style="display:flex;gap:7px;margin-top:7px">'
+          +'<button class="bk-btn" style="flex:1" onclick="gdTestAndSave()" id="gd-test-btn">'+t('gd_test')+'</button>'
         +'</div>'
-        +'<div id="gd-test-result" style="font-size:.72rem;margin-top:5px;min-height:16px"></div>'
+        +'<div id="gd-test-result" style="font-size:.72rem;margin-top:6px;min-height:16px"></div>'
       +'</div></div>';
   }
 
@@ -1881,32 +1976,41 @@ function copyGasCode(){
 
 async function gdTestAndSave(){
   var inp=document.getElementById('gd-url-inp');
-  if(!inp) return;
-  var url=inp.value.trim();
+  var kinp=document.getElementById('gd-key-inp');
+  if(!inp||!kinp) return;
+  var url=inp.value.trim().replace(/\/+$/,'');
+  var apiKey=kinp.value.trim();
   if(!url){ toast('⚠️ '+t('gd_url_ph')); return; }
+  if(!apiKey){ toast('⚠️ '+t('gd_key_ph')); return; }
   var btn=document.getElementById('gd-test-btn');
   var res=document.getElementById('gd-test-result');
   btn.textContent=t('gd_testing'); btn.disabled=true;
-  res.style.color='var(--mu)'; res.textContent='...';
+  res.style.color='var(--mu)'; res.textContent='⏳ '+t('gd_testing');
   try{
-    var resp=await fetch(url+'?action=ping',{method:'GET'});
-    var data=await resp.json();
-    if(data.ok){
-      res.style.color='var(--grl)'; res.textContent=t('gd_test_ok');
-      saveGdUrl(url); var cfg=getBkpCfg(); cfg.gdAutoOn=true; saveBkpCfg(cfg);
-      setTimeout(function(){ document.getElementById('gdmod').classList.remove('on'); renderProf(); toast(t('gd_connected')); }, 900);
-    } else {
-      res.style.color='var(--dng)'; res.textContent='❌ '+t('gd_err');
-    }
+    // Step 1: ping — always public, verifies URL is correct
+    var r1=await fetch(url+'?action=ping');
+    if(!r1.ok) throw new Error('HTTP '+r1.status);
+    var d1=await r1.json();
+    if(!d1.ok) throw new Error(d1.error||'ping failed');
+    // Step 2: verify key by listing files
+    var r2=await fetch(url+'?action=list&key='+encodeURIComponent(apiKey));
+    if(!r2.ok) throw new Error('HTTP '+r2.status);
+    var d2=await r2.json();
+    if(!d2.ok) throw new Error(d2.error==='Unauthorized'?t('gd_wrong_key'):(d2.error||'auth failed'));
+    // ✅ All good — save and connect
+    saveGdUrl(url); saveGdKey(apiKey);
+    var cfg=getBkpCfg(); cfg.gdAutoOn=true; saveBkpCfg(cfg);
+    res.style.color='var(--grl)'; res.textContent=t('gd_test_ok');
+    setTimeout(function(){ document.getElementById('gdmod').classList.remove('on'); renderProf(); toast(t('gd_connected')); },900);
   }catch(e){
-    res.style.color='var(--dng)'; res.textContent='❌ '+t('gd_err');
+    res.style.color='var(--dng)'; res.textContent='❌ '+e.message;
   }
   btn.textContent=t('gd_test'); btn.disabled=false;
 }
 
 function gdDisconnect(){
   if(!confirm(t('gd_disconnect')+'?')) return;
-  saveGdUrl('');
+  saveGdUrl(''); saveGdKey('');
   var cfg=getBkpCfg(); cfg.gdAutoOn=false; saveBkpCfg(cfg);
   document.getElementById('gdmod').classList.remove('on');
   renderProf(); toast('🔌 '+t('gd_disconnect'));
@@ -1916,22 +2020,37 @@ function toggleGdAuto(){ var c=getBkpCfg(); c.gdAutoOn=!c.gdAutoOn; saveBkpCfg(c
 function setGdInt(v){ var c=getBkpCfg(); c.gdInt=v; saveBkpCfg(c); }
 
 async function gdBackupNow(){
-  var url=getGdUrl();
+  var url=getGdUrl(), key=getGdKey();
   if(!url){ openGdModal(); return; }
   var lbl=document.getElementById('gd-prog-lbl');
-  if(lbl){ lbl.textContent=t('gd_backing'); }
+  if(lbl) lbl.textContent=t('gd_backing');
   var uname=getCur();
-  var fname='zakat-backup-'+uname+'-'+today()+'.json';
-  var payload={filename:fname, data:{version:3,exported:new Date().toISOString(),user:uname,userData:getUs()[uname],data:curDat()}};
+  var ts=new Date().toISOString().slice(0,19).replace(/:/g,'-');
+  // body.data is the full restorable payload (what mergeImport reads)
+  var payload={
+    filename: 'zakat-'+uname+'-'+ts+'.json',
+    data: {
+      version :3,
+      exported:new Date().toISOString(),
+      user    :uname,
+      userData:getUs()[uname],
+      data    :curDat()
+    }
+  };
   try{
-    var resp=await fetch(url,{method:'POST',body:JSON.stringify(payload)});
-    var data=await resp.json();
-    if(data.ok){
+    // key is sent as URL param so checkKey(e) can read e.parameter.key
+    var resp=await fetch(url+'?key='+encodeURIComponent(key),{
+      method :'POST',
+      headers:{'Content-Type':'application/json'},
+      body   :JSON.stringify(payload)
+    });
+    var d=await resp.json();
+    if(d.ok){
       var cfg=getBkpCfg(); cfg.lastDrive=Date.now(); saveBkpCfg(cfg);
       toast(t('gd_ok'));
       if(document.getElementById('gdmod').classList.contains('on')) openGdModal();
       renderProf();
-    } else { toast('❌ '+t('gd_err')); }
+    } else { toast('❌ '+(d.error||t('gd_err'))); }
   }catch(e){ toast('❌ '+t('gd_err')); }
 }
 
@@ -1943,7 +2062,7 @@ async function gdOpenRestore(){
   document.getElementById('drmod-list').innerHTML='<div style="text-align:center;padding:24px;color:var(--mu);font-size:.82rem">'+t('bkp_loading')+'</div>';
   document.getElementById('drmod').classList.add('on');
   try{
-    var resp=await fetch(url+'?action=list');
+    var resp=await fetch(url+'?action=list&key='+encodeURIComponent(getGdKey()));
     var data=await resp.json();
     var files=data.files||[];
     if(!files.length){
@@ -1971,11 +2090,12 @@ async function gdOpenRestore(){
 }
 
 async function gdRestoreFile(fileId){
-  var url=getGdUrl();
+  var url=getGdUrl(), key=getGdKey();
   if(!url) return;
   document.getElementById('drmod').classList.remove('on');
   try{
-    var resp=await fetch(url+'?action=get&id='+fileId);
+    var resp=await fetch(url+'?action=get&id='+fileId+'&key='+encodeURIComponent(key));
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
     var json=await resp.text();
     mergeImport(json);
     toast(t('gd_restore_ok'));
@@ -1987,7 +2107,7 @@ async function gdDeleteFile(fileId, btn){
   if(!url) return;
   btn.textContent='...'; btn.disabled=true;
   try{
-    var resp=await fetch(url+'?action=delete&id='+fileId);
+    var resp=await fetch(url+'?action=delete&id='+fileId+'&key='+encodeURIComponent(getGdKey()));
     var data=await resp.json();
     if(data.ok){
       var row=btn.closest('.drfile');
